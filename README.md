@@ -187,6 +187,6 @@ Figures are written beside their workflows. PDF text remains editable. Reuse of 
 
 ## Verification and license
 
-Input conversion has been checked against stored HCP scan outputs; numerical routines and selected workflow paths have targeted checks. These checks do not constitute a complete new 1,003-participant fit and figure run.
+Verification includes full-cohort CPCA fitting, one reference HMM refit, all CPC-count and geometric-coordinate decoder fits used in the figures, recomputation of transition and correspondence statistics, and rendering of the main and supplementary figures. Input conversion was checked on available reference scans. Six-fit HMM agreement and the optional HMM-method comparisons were recomputed from saved models; not every HMM initialization or every raw ICA-FIX scan was refitted or reprocessed. Exact numerical replay uses the recorded seeds and input versions; new random initializations can produce different state solutions.
 
 Project-owned code is MIT. The HMM-MAR-derived comparison component retains GPL-3.0. See [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md). Data and trained models are not distributed, and code licenses do not grant data access or redistribution rights.

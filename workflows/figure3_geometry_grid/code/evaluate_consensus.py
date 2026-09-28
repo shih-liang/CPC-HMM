@@ -68,7 +68,7 @@ def write_csv(path, rows):
 
 def main(out):
     export = out / "export"
-    export.mkdir()
+    export.mkdir(parents=True)
     private = out / "participant_metrics"
     private.mkdir()
     posterior_paths = [

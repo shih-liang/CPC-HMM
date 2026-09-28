@@ -97,4 +97,4 @@ State reconstruction uses `Re(C Uᴴ)`. Maps first average frames within each st
 
 ## Verification scope
 
-Restored source programs were parsed and linted; selected numerical routines and the extracted state-map calculations were checked with small inputs. The full 1,003-participant pipeline was not refitted during restoration. Original data, fit metadata and spatial input files remain necessary for full reproduction; this is not a claim of a new end-to-end run.
+Execution checks cover full-cohort CPCA fitting and coordinate generation, one reference HMM refit, seven CPC decoder fits, five geometric-coordinate decoder fits, transition and correspondence analyses, and all main and supplementary renderers. Six-initialization agreement and optional EM/Variational Bayes/GLHMM comparison statistics were rerun using saved posterior/model files; all of those models were not retrained. Raw ICA-FIX preprocessing was checked on available reference scans rather than the full cohort. Recorded seeds were used for numerical replay; routine runs may use new random seeds. These checks therefore do not establish a completely fresh download-to-all-models run.
