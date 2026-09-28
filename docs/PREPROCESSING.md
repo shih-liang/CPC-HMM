@@ -1,5 +1,7 @@
 # Convert HCP downloads into analysis inputs
 
+All data and templates must be downloaded manually after reviewing their providers' access and use terms. These programs only read local inputs and do not retrieve missing files. See the [manual download instructions](../README.md#1-manually-download-data).
+
 ## Sources and order
 
 Use the HCP ICA-FIX `*_Atlas_hp2000_clean.dtseries.nii` resting-state scans and the official HCP1200 MSMAll `NodeTimeseries_3T_HCP1200_MSMAll_ICAd50_ts2` release. Each subject's ICA50 text file has 4,800 rows and 50 columns. The study uses four contiguous 1,200-frame blocks in REST1_LR, REST1_RL, REST2_LR, REST2_RL order. Supply a plain-text subject list, one ID per line, in the desired order. The published full-cohort analyses require the recorded 1,003 participants; the converter permits smaller verification subsets.

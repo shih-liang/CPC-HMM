@@ -4,9 +4,13 @@ Code for analysing CPC travelling-wave coordinates, ICA networks and HMM states,
 
 **Download data → preprocess → analyse → plot.** Accuracy, retained variance, consensus coverage and transition counts are computed from the supplied data and fitted models. They are not required to match previously reported values.
 
-## 1. Download data
+## 1. Manually download data
 
-Obtain these inputs under their providers' access terms:
+All datasets, atlases and surface templates must be downloaded manually from their providers. Review and accept the applicable access and data-use terms before downloading. The analysis and plotting programs read local files only; they do not download missing data or accept agreements on your behalf. Missing inputs must be obtained and placed locally before rerunning a program.
+
+The MIT license covers this repository's code, not third-party datasets or templates. Those resources retain their providers' terms and are not bundled here. Package installation commands install software dependencies; they do not obtain the study datasets.
+
+Manually obtain the following inputs:
 
 | Input | Required files |
 | --- | --- |
@@ -16,6 +20,14 @@ Obtain these inputs under their providers' access terms:
 | Cortical templates | S900 surfaces, registration spheres and vertex-area metrics listed in [PREPROCESSING.md](docs/PREPROCESSING.md) |
 | FreeSurfer surfaces | `fsaverage4/surf/{lh,rh}.{inflated,pial,sphere}` |
 | Geometry surfaces | Nilearn fsaverage4 white, pial and sphere surfaces (manual download instructions below) |
+
+### Data and template sources
+
+- **HCP ICA-FIX scans and official ICA50 time courses/maps:** follow the [HCP S1200 release instructions](https://www.humanconnectome.org/study/hcp-young-adult/document/1200-subjects-data-release), including the linked data-use terms and access procedure. Select the exact packages and filenames listed above.
+- **S900 surfaces, source registration spheres and vertex-area metrics:** manually obtain the files listed in [PREPROCESSING.md](docs/PREPROCESSING.md) from the linked template providers.
+- **HCP fsaverage4 target spheres and area metrics:** manually obtain them from [HCPpipelines resample_fsaverage](https://github.com/Washington-University/HCPpipelines/tree/master/global/templates/standard_mesh_atlases/resample_fsaverage), following the provider's terms. Place them in the local preprocessing template directory.
+- **FreeSurfer plotting surfaces:** supply the local `fsaverage4` subject from your separately obtained FreeSurfer distribution and set `SUBJECTS_DIR` accordingly.
+- **Geometry white/pial/sphere surfaces:** follow the manual archive instructions in step 2 below.
 
 Here “downloaded data” means **HCP-preprocessed ICA-FIX data**. This repository does not rerun HCP preprocessing or estimate the official ICA50 decomposition.
 
