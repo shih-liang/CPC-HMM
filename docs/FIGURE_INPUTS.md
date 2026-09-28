@@ -29,7 +29,7 @@ Directory: `workflows/supplementary_figures_2_3_20260921/`. Needs the complete s
 ## Data roots
 
 - HCP_DERIVATIVES: existing analysis derivative tree, needed by Figure 1.
-- HCP_CORTICAL_ROOT: preprocessed cortical BOLD root, needed by Figure 1.
+- HCP_CORTICAL_ROOT: cortical BOLD arrays prepared from HCP-downloaded ICA-FIX-denoised resting-state fMRI, needed by Figure 1.
 - HCP_SOURCE_PACKAGE: optional existing spatial/figure source package used by Figures 3 and Supplement 1 when local source copies are absent.
 - HCP_ICA_ROOT: directory containing X_ICA50_zscore.npy for HMM fitting.
 

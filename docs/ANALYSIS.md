@@ -1,6 +1,6 @@
 # Generate the figure inputs
 
-This repository includes the retained analysis programs as well as the renderers. Start from preprocessed cortical BOLD and ICA50 time series, cortical surfaces and geometric eigenmodes. Raw HCP preprocessing and calculation of the supplied geometric eigenmodes are external inputs. Neither the time series nor trained models are distributed here.
+This repository includes the retained analysis programs as well as the renderers. The study source is ICA-FIX-denoised resting-state fMRI data downloaded from HCP. The programs below start from the cortical BOLD arrays and ICA50 time series prepared for this study, together with cortical surfaces and geometric eigenmodes. They do not rerun HCP preprocessing or ICA-FIX denoising. Preparation of these input arrays from the downloaded files and calculation of the supplied geometric eigenmodes are external steps. Neither the time series nor trained models are distributed here.
 
 Install `requirements-analysis.txt`. Set `HCP_DERIVATIVES`, `HCP_CORTICAL_ROOT`, `HCP_ICA_ROOT`, and, for spatial extraction, `HCP_ICA_SPATIAL_FILE`. The original spatial extractor expects FreeSurfer fsaverage4 under `/opt/freesurfer/subjects`; adapt this input path for your installation. `HCP_DEVICE` selects the device in the original CPCA scripts (default `cuda:1`); decoder scripts expose `--device`.
 
