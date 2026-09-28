@@ -28,17 +28,17 @@ Programs are in `workflows/analysis_pipeline/`. These programs implement the stu
 | 8 | `cpca_reliability.py` | Acquisition-specific CPC bases, overlap, subspace and variance statistics under `REV` |
 | 9 | `evaluate_reliability.py` | Training-derived HMM matching, six-fit masks, decoding and reliability statistics under `REV` |
 
-The matching evaluator reads `robust_seed2` and `consensus_seed5` from `BASE`, and `robust`, `consensus_seed3`, `consensus_seed4`, `consensus_seed6` from `REV`. The original `robust` posterior under `BASE` is also required for the decoder's original two-fit validation criterion. Preserve these distinct fit versions when replaying the study. Do not replace all tags with copies of one fit. The fitting scripts' default iteration cap is not a prescription for recreating every archived fit: use its recorded seed/iteration settings or provide the archived models.
+The matching evaluator reads `robust_seed2` and `consensus_seed5` from `BASE`, and `robust`, `consensus_seed3`, `consensus_seed4`, `consensus_seed6` from `REV`. The original `robust` posterior under `BASE` is also required for the decoder's original two-fit validation criterion. Preserve these distinct fit versions when replaying the study. Do not replace all tags with copies of one fit. Each new fit samples and saves a random initialization seed; `--seed` is optional. Use the commands in README to produce all seven required fit files. The tag names identify outputs and do not specify numeric seeds.
 
 The decoder computes the two-fit evaluation agreement mask directly from the posteriors using its training-derived matching. Extended CPCA reads the target label from the bundled `rank_protocol.json` for descriptive metadata only; CPCA fitting does not depend on an HMM target.
 
-Some final analysis programs retain assertions for the recorded cohort, event counts and common-frame counts. They reproduce this study's existing fits; arbitrary refits may require revisiting those replay assertions and will not necessarily reproduce the paper's numbers.
+Cohort dimensions and input consistency are checked. Accuracy, common-frame coverage, component selection and transition counts are computed from the current fits, with no required historical values.
 
 ## Figure 1 and Supplementary Figure 1
 
 `cpca_figure1/code/prepare_sources.py --source SOURCE_PACKAGE --root workflows/cpca_figure1` prepares the group summary inputs. `component_variance.py --root workflows/cpca_figure1` generates participant-level component and cumulative variance summaries used for the SD error bars. Then run `make_figure.py`.
 
-Run `workflows/prepare_inputs/prepare_figure_sources.py --derivatives HCP_DERIVATIVES --output SOURCE_PACKAGE` to assemble the source directory. Its layout consists of `figure_data/cpca_basis_REST1_LR.npz` (from `REV/data`), `figure_data/surfaces_and_eigenmodes.npz` (from `BASE/data`), and `source_data/` containing the `cpca_*` reliability CSVs from `REV/results`. Copy `BASE/results/cpca_component_properties.csv` there as `original_cpca_component_properties.csv`. Figure 1 reads its basis directly from `REV/data/cpca_basis_REST1_LR.npz`.
+Run `workflows/prepare_inputs/prepare_figure_sources.py --derivatives HCP_DERIVATIVES --output SOURCE_PACKAGE` to assemble the source directory. Its layout consists of `figure_data/cpca_basis_REST1_LR.npz` (from `REV/data`), `figure_data/surfaces_and_eigenmodes.npz` (from `BASE/data`), and `source_data/` containing the `cpca_*` reliability CSVs from `REV/results`. The assembler also copies the component-property and geometric-summary files. Figure 1 reads its basis directly from `REV/data/cpca_basis_REST1_LR.npz`.
 
 Supplementary Figure 1 reads the same basis and surfaces. Set `HCP_SOURCE_PACKAGE` to this source package or place these two NPZ files in its `source_data/` directory.
 
@@ -61,12 +61,12 @@ Programs are in `workflows/figure3_geometry_grid/code/`:
 
 1. `geometry_activity.py --source /path/to/BASE --output /path/to/activity` generates covariance sufficient statistics and the retained-variance CSV/JSON files.
 2. `direct_decoding.py --stage project --output /path/to/HCP_DERIVATIVES/wave_geometry_decoder_20260918_01/results --device cuda:0` generates native geometric coefficients.
-3. Run the same program with `--stage fit --conditions geo15,geo50,geo200` and then `--stage summarize` to generate the initial decoder predictions and summaries. These counts are per hemisphere.
+3. Run the same program with `--stage fit --conditions geo15,geo50,geo200` and then `--stage summarize --conditions geo15,geo50,geo200` to generate the initial decoder predictions and summaries. These counts are per hemisphere.
 4. For the 100 and 150 modes-per-hemisphere additions, create `HCP_DERIVATIVES/wave_geometry_decoder_grid_20260918_01/results`, with links to `native_geometry_scores.npy` and `projection_validation.json` from the projection output. Run `fit_additional.py --condition geo100 --output … --device cuda:0` and repeat for `geo150`.
-5. `evaluate_consensus.py --output /path/to/fig3-evaluation` evaluates all five counts on the same six-fit common frames and writes `export/`. The older three-count summary is an optional replay comparison; it is not required.
+5. `evaluate_consensus.py --output /path/to/fig3-evaluation` evaluates all five counts on the same six-fit common frames and writes `export/`.
 6. Copy the activity CSV/JSON files and the evaluation `export/` files to `figure3_geometry_grid/source_data/`. Add the basis, surfaces and `BASE/results/geometry_incremental_energy.npz`. Copy the generated `BASE/results/Figure2_geometry_summary.csv` as `original_geometry_summary.csv`. Then run `make_figure.py`.
 
-`evaluate_training.py` retains the training-set evaluation of saved decoders. The five plotted bilateral coordinate counts are 30, 100, 200, 300 and 400. `GRID_EXTENSION_PROTOCOL.md` records the decoder settings and the common-state evaluation definition.
+`evaluate_training.py` retains the training-set evaluation of saved decoders. The five plotted bilateral coordinate counts are 30, 100, 200, 300 and 400. Participant accuracy averages the available run-specific consensus accuracies; a run without consensus frames is undefined. Participants with no supported run are excluded from this summary, with the supported count saved in the output. `GRID_EXTENSION_PROTOCOL.md` records the decoder settings and the common-state evaluation definition.
 
 ## Figure 4
 

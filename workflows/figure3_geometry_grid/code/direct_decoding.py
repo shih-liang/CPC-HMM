@@ -396,7 +396,7 @@ def fit(names, out, device):
         torch.cuda.empty_cache()
 
 
-def summarize(out):
+def summarize(out, names=None):
     rng = np.random.default_rng(20260918)
     boot = rng.integers(0, N, size=(2000, N))
     result = []
@@ -405,7 +405,9 @@ def summarize(out):
     selections = []
     export = out / "export"
     export.mkdir(exist_ok=True)
-    for name, (family, count) in CONDITIONS.items():
+    names = list(CONDITIONS) if names is None else names
+    for name in names:
+        family, count = CONDITIONS[name]
         folder = out / name
         complete = json.loads((folder / "complete.json").read_text())
         assert complete["status"] == "PASS"
@@ -440,7 +442,7 @@ def summarize(out):
         )
         histories.extend(list(csv.DictReader((folder / "validation_history.csv").open())))
     differences = []
-    for name in [key for key in CONDITIONS if key != "cpc30"]:
+    for name in [key for key in names if key != "cpc30" and "cpc30" in per_subject]:
         d = per_subject[name] - per_subject["cpc30"]
         ci = np.quantile(d[boot].mean(1), [0.025, 0.975])
         differences.append(
@@ -456,7 +458,8 @@ def summarize(out):
     for record in validation["sources"]:
         assert fingerprint(Path(record["path"])) == record
     write_csv(export / "direct_decoding_summary.csv", result)
-    write_csv(export / "paired_accuracy_differences.csv", differences)
+    if differences:
+        write_csv(export / "paired_accuracy_differences.csv", differences)
     write_csv(export / "validation_histories.csv", histories)
     write_json(
         export / "decoding_validation.json",
@@ -494,4 +497,4 @@ if __name__ == "__main__":
     elif args.stage == "fit":
         fit(args.conditions.split(","), args.output, args.device)
     else:
-        summarize(args.output)
+        summarize(args.output, args.conditions.split(","))

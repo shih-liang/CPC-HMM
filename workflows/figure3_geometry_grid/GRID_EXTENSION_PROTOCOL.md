@@ -18,11 +18,11 @@ No test-accuracy tuning or repeated seed selection. All requested conditions are
 ## Common-state evaluation and statistics
 
 - Use the identical six-HMM unanimous-label definition and training-derived permutations from `CONSENSUS_EVALUATION_PROTOCOL.md`.
-- All five conditions must use exactly the same 582,874 common-state REST2 frames (29.0565% of 2,006,000 frames), 1,003 participants and two evaluation acquisitions per participant.
+- All five conditions must use the same common-state REST2 frames selected from the current six fits, 1,003 participants and two evaluation acquisitions per participant.
 - Figure and primary manuscript text use the participant mean: calculate run-specific common-state accuracies, average the two runs within each participant, then summarize across participants. Error bars are between-participant SD.
 - Pooled accuracy is a separate secondary estimator, reported explicitly in source tables. It is not substituted for the participant mean in the figure or its accompanying main paragraph.
 - Use the existing 2,000 participant-bootstrap resamples, seed 20260918, keeping both runs together. No frame-level inferential tests. Family dependence and model-fitting uncertainty remain outside these intervals.
-- Verify exact reproduction of the retained 30-,100-,400-coordinate results and the historical CPC30 pooled accuracy. Do not infer an information ceiling or a universal minimum dimension from the sampled points.
+- Compute all five geometric-coordinate results and the CPC30 reference from the current model outputs. Do not infer an information ceiling or a universal minimum dimension from the sampled points.
 
 ## Isolation and checks
 

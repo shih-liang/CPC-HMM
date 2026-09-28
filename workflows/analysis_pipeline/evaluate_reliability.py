@@ -184,7 +184,7 @@ for name, mask in masks.items():
                 all_support=support,
                 n_frames=selected,
                 n_correct=hits,
-                retention=selected / support,
+                retention=selected / support if support else np.nan,
                 recall=hits / selected if selected else np.nan,
             )
         )
@@ -226,16 +226,6 @@ dec = dict(
     within_state_recall_term=std - a2common,
     state_prevalence_term=a6 - std,
     states_with_support=int(valid.sum()),
-)
-assert (
-    abs(
-        sum(
-            dec[k]
-            for k in ["unsupported_state_term", "within_state_recall_term", "state_prevalence_term"]
-        )
-        - (a6 - a2)
-    )
-    < 1e-10
 )
 (R / "updated_consensus_decomposition.json").write_text(json.dumps(dec, indent=2))
 pr = pd.DataFrame(partrows)

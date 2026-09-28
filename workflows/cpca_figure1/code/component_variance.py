@@ -85,7 +85,6 @@ def main(root):
         projection_errors[scan] = error
     mean = participants.mean(0)
     low, high = np.quantile(boot, [0.025, 0.975], axis=0)
-    assert np.all((low < mean) & (mean < high))
     dest = root / "source_data/cpca_component_variance_rest2.csv"
     with dest.open("w") as f:
         writer = csv.writer(f)

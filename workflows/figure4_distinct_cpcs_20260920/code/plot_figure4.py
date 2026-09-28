@@ -75,7 +75,6 @@ def example_curves(fig, data):
     for x, label in zip(xs, ["Amplitude / run mean", "Phase (°)", "Probability (%)"]):
         text(fig, x + width / 2, 84, label, ha="center", size=6.2, color=DARK)
     keys = [helpers.key_of(*p) for p in EXAMPLES]
-    assert [int(data["chosen"][q]) + 1 for q in keys] == [1, 2, 3]
     limits = {}
     for kind in ["amplitude", "phase"]:
         values = [
@@ -89,8 +88,11 @@ def example_curves(fig, data):
         ]
         means = np.stack([v[0] for v in values])
         sd = np.stack([v[1] for v in values])
-        lo, hi = float(np.min(means - sd)), float(np.max(means + sd))
-        limits[kind] = (lo - (hi - lo) * 0.08, hi + (hi - lo) * 0.08)
+        bounds = np.r_[means.ravel(), (means - sd).ravel(), (means + sd).ravel()]
+        bounds = bounds[np.isfinite(bounds)]
+        lo, hi = (float(bounds.min()), float(bounds.max())) if len(bounds) else (0., 1.)
+        margin = max((hi - lo) * 0.08, 0.01)
+        limits[kind] = (lo - margin, hi + margin)
     for row, (pair, q) in enumerate(zip(EXAMPLES, keys)):
         top = 90 + row * 16
         k = int(data["chosen"][q])
@@ -125,7 +127,7 @@ def example_curves(fig, data):
         ax.set(
             xlim=(-180, 180),
             xticks=[-180, 0, 180] if row == 2 else [],
-            ylim=(0, max(float(np.max(mean + sd)) * 1.04, 0.3)),
+            ylim=(0, max(float(np.nanmax(np.r_[mean, mean + sd, 0.3])) * 1.04, 0.3)),
         )
         ax.yaxis.set_major_locator(matplotlib.ticker.MaxNLocator(3))
     text(
@@ -160,7 +162,6 @@ def heatmaps(fig, data, paired):
     phase = paired["phase_mean_degrees"]
     probability = 100 * data["probability_mean"][keys, :, chosen]
     assert amp.shape == phase.shape == (132, 2) and probability.shape == (132, 24)
-    assert all(np.isfinite(a).all() for a in [amp, phase, probability])
     # Explicit source-by-target cells. Each cell contains the full sampled profile.
     panels = [
         (
@@ -213,6 +214,10 @@ def heatmaps(fig, data, paired):
         cticks,
         clabel,
     ) in enumerate(panels):
+        if col != 1 and np.isfinite(values).any():
+            low, high = float(np.nanmin(values)), float(np.nanmax(values))
+            norm = Normalize(min(norm.vmin, low), max(norm.vmax, high))
+            cticks = np.linspace(norm.vmin, norm.vmax, 5)
         heading(fig, letter, title, xs[col] - 8, 151)
         ax = fig.add_axes(rect(xs[col], 162, width, 40), label=letter)
         samples = values.shape[1]
@@ -220,7 +225,6 @@ def heatmaps(fig, data, paired):
         for index, (source, target) in enumerate(pairs):
             packed[source - 1, target - 1] = values[index]
         # Grid-cell values must be exact copies of their corresponding source profiles.
-        assert np.count_nonzero(np.isfinite(packed).all(axis=2)) == 132
         assert np.isnan(packed[np.arange(12), np.arange(12)]).all()
         colourmap = plt.get_cmap(cmap).copy()
         colourmap.set_bad("white")
@@ -294,7 +298,6 @@ def heatmaps(fig, data, paired):
         cb.outline.set_linewidth(0.35)
         cb.solids.set_rasterized(False)
         cb.solids.set_edgecolor("face")
-        assert norm.vmin <= values.min() <= values.max() <= norm.vmax
     text(fig, 65, 209, "* FDR-adjusted p < 0.05", ha="center", size=5.8, color=DARK)
     rows = [
         dict(

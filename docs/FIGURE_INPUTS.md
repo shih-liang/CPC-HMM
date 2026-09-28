@@ -30,7 +30,7 @@ Directory: `workflows/supplementary_figures_2_3_20260921/`. Needs the complete s
 
 - HCP_DERIVATIVES: existing analysis derivative tree, needed by Figure 1.
 - HCP_CORTICAL_ROOT: cortical BOLD arrays prepared from HCP-downloaded ICA-FIX-denoised resting-state fMRI, needed by Figure 1.
-- HCP_SOURCE_PACKAGE: prepared directory assembled from analysis outputs, not an HCP-provided package. Figures 3 and Supplement 1 use it when local source copies are absent; Figure 1 preparation accepts it through `--source`. See the README for exact filenames and generating scripts.
+- HCP_SOURCE_PACKAGE: prepared directory assembled from analysis outputs, not an HCP-provided package. Figures 3 and Supplement 1 use it when local source copies are absent; Figure 1 preparation accepts it through `--source`. The assembler is `workflows/prepare_inputs/prepare_figure_sources.py`; its inputs come from `analysis_pipeline` as described in ANALYSIS.md.
 - HCP_ICA_ROOT: directory containing X_ICA50_zscore.npy for HMM fitting.
 
 The HMM comparison reshapes ICA data as (4012, 1200, 50), with scan order participant × [REST1_LR, REST1_RL, REST2_LR, REST2_RL]. The first 100 participants form the recorded comparison. No HCP arrays or example subject traces are shipped here.

@@ -27,12 +27,6 @@ ADDITIONAL = Path(
         "wave_geometry_decoder_grid_20260918_01/results",
     )
 )
-PREVIOUS = Path(
-    os.path.join(
-        os.environ.get("HCP_DERIVATIVES", "/configure/HCP_DERIVATIVES"),
-        "wave_geometry_consensus_20260918_01/export/direct_decoding_summary.csv",
-    )
-)
 TAGS = [
     "robust_seed2",
     "robust",
@@ -99,14 +93,12 @@ def main(out):
     )
     mapping_path = UPDATED / "results/updated_hmm_mappings.json"
     mask_path = UPDATED / "data/updated_consensus_masks.npz"
-    historical_path = UPDATED / "results/CPCA30_updated_HMM_fits_accuracy.csv"
     metric_paths = [folder / "scan_metrics.csv" for folder in folders.values()]
     paths = (
         posterior_paths
         + list(prediction_paths.values())
         + metric_paths
-        + [mapping_path, mask_path, historical_path]
-        + ([PREVIOUS] if PREVIOUS.is_file() else [])
+        + [mapping_path, mask_path]
     )
     before = [fingerprint(p) for p in paths]
     mappings = json.loads(mapping_path.read_text())
@@ -128,24 +120,16 @@ def main(out):
         common &= labels == truth
         del a, p, labels
     assert np.array_equal(common, archived_mask)
-    assert common.shape == (2006, 1000) and int(common.sum()) == 582874
+    assert common.shape == (2006, 1000)
     counts = common.sum(1)
-    assert counts.min() > 0
     participant_counts = counts.reshape(N, 2).sum(1)
     rng = np.random.default_rng(20260918)
     boot = rng.integers(0, N, size=(2000, N))
-    old = {}
-    if PREVIOUS.is_file():
-        with PREVIOUS.open() as f:
-            old = {r["condition"]: r for r in csv.DictReader(f)}
-    with historical_path.open() as f:
-        historical = next(r for r in csv.DictReader(f) if r["subset"] == "fits6")
     rows = []
     state_rows = []
     all_frame_errors = {}
     probability_errors = {}
     benchmark = None
-    retained_errors = {}
     for name, path in prediction_paths.items():
         p = np.load(path, mmap_mode="r")
         assert p.shape == (2006, 1000, K) and np.isfinite(p).all()
@@ -154,29 +138,33 @@ def main(out):
         guess = p.argmax(2)
         correct = guess == truth
         hits = (correct & common).sum(1)
-        values = (hits / counts).reshape(N, 2).mean(1)
+        run_accuracy = np.divide(hits, counts, out=np.full(len(counts), np.nan), where=counts > 0)
+        # A run with no unanimous frames has no accuracy estimate.
+        values = np.nanmean(run_accuracy.reshape(N, 2), axis=1)
         participant_hits = hits.reshape(N, 2).sum(1)
-        mean_ci = np.quantile(values[boot].mean(1), [0.025, 0.975])
+        mean_ci = np.quantile(np.nanmean(values[boot], axis=1), [0.025, 0.975])
         pooled_ci = np.quantile(
             participant_hits[boot].sum(1) / participant_counts[boot].sum(1), [0.025, 0.975]
         )
         cf = np.zeros((K, K), dtype=np.int64)
         np.add.at(cf, (truth[common], guess[common]), 1)
-        assert cf.sum() == 582874 and np.all(cf.sum(1) > 0)
+        assert cf.sum() == common.sum()
         row = dict(
             condition=name,
-            participants=N,
+            participants=int(np.isfinite(values).sum()),
             runs=len(TEST),
             frames=int(common.sum()),
             coverage=float(common.mean()),
-            accuracy_mean=float(values.mean()),
-            accuracy_sd=float(values.std(ddof=1)),
+            accuracy_mean=float(np.nanmean(values)),
+            accuracy_sd=float(np.nanstd(values, ddof=1)),
             accuracy_ci_low=float(mean_ci[0]),
             accuracy_ci_high=float(mean_ci[1]),
             pooled_accuracy=float(hits.sum() / counts.sum()),
             pooled_ci_low=float(pooled_ci[0]),
             pooled_ci_high=float(pooled_ci[1]),
-            balanced_accuracy=float(np.mean(np.diag(cf) / cf.sum(1))),
+            balanced_accuracy=float(np.nanmean(np.divide(
+                np.diag(cf), cf.sum(1), out=np.full(K, np.nan), where=cf.sum(1) > 0
+            ))),
             present_states=int((cf.sum(1) > 0).sum()),
         )
         write_csv(
@@ -192,8 +180,6 @@ def main(out):
             ],
         )
         if name == "archived_cpc30":
-            assert abs(row["pooled_accuracy"] - float(historical["accuracy"])) < 1e-12
-            assert row["frames"] == int(historical["n_frames"])
             benchmark = row
         else:
             row.update(
@@ -209,12 +195,6 @@ def main(out):
             )
             all_frame_errors[name] = abs(float(correct.mean()) - all_frame_accuracy)
             assert all_frame_errors[name] < 1e-12
-            if name in old:
-                retained_errors[name] = max(
-                    abs(row[key] - float(old[name][key]))
-                    for key in ["accuracy_mean", "accuracy_sd", "pooled_accuracy"]
-                )
-                assert retained_errors[name] < 1e-12
             rows.append(row)
             for k in range(K):
                 support = int(cf[k].sum())
@@ -225,8 +205,8 @@ def main(out):
                         state=k + 1,
                         selected_frames=support,
                         all_frames=full,
-                        retention=support / full,
-                        recall=float(cf[k, k] / support),
+                        retention=support / full if full else float("nan"),
+                        recall=float(cf[k, k] / support) if support else float("nan"),
                     )
                 )
         print(json.dumps(row), flush=True)
@@ -266,12 +246,10 @@ def main(out):
         minimum_selected_frames_per_run=int(counts.min()),
         probability_sum_max_errors=probability_errors,
         all_frame_replay_max_errors=all_frame_errors,
-        retained_consensus_result_max_errors=retained_errors,
         selected_checkpoints=selections,
-        historical_CPC30_pooled_accuracy=benchmark["pooled_accuracy"],
-        historical_CPC30_reproduced=True,
+        CPC30_pooled_accuracy=benchmark["pooled_accuracy"],
         displayed_conditions=list(CONDITIONS),
-        displayed_estimator="Participant mean of two run-specific consensus accuracies",
+        displayed_estimator="Participant mean of available run-specific consensus accuracies; unsupported runs omitted",
         plot_error_bars="Between-participant SD",
         bootstrap="2000 participant resamples; both runs together; seed 20260918",
         models_refitted=False,

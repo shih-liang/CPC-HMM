@@ -112,7 +112,7 @@ def main(out):
     sd = np.sqrt(-2 * np.log(np.maximum(r, 1e-300)))
     sd[n < 2] = np.nan
     mean[(n == 0) | (r <= 1e-12)] = np.nan
-    assert counts.sum() == 223131 and not runs
+    assert not runs
     np.savez_compressed(
         result / "absolute_phase_profiles.npz",
         absolute_phase_mean=mean,

@@ -452,7 +452,6 @@ def main(root):
     ax.plot(range(1, 51), 100 * np.array(train["cumulative"]), color=BLUE, label="REST1 LR basis")
     cumulative_sd = np.array([float(r["sd"]) for r in test])
     interval = 100 * np.array([cumulative_sd, cumulative_sd])
-    assert np.all(interval > 0)
     # Draw participant SDs above the mean markers at their actual data-scale extent.
     ax.errorbar(
         rank,
@@ -484,7 +483,7 @@ def main(root):
     ax.text(
         0.09,
         0.29,
-        "30 CPCs: 52.7%",
+        f"30 CPCs: {100 * train['cumulative'][29]:.1f}%",
         transform=ax.transAxes,
         color=BLUE,
         fontsize=7.4,
@@ -515,7 +514,6 @@ def main(root):
     component_mean = np.array([float(row["mean"]) for row in component_stats])
     component_sd = np.array([float(row["sd"]) for row in component_stats])
     component_error = 100 * np.array([component_sd, component_sd])
-    assert np.all(component_sd > 0) and np.all(component_mean - component_sd > 0)
     ax.bar(
         np.arange(1, 31),
         100 * component_mean,

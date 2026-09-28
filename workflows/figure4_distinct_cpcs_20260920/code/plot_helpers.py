@@ -98,7 +98,7 @@ def graph(fig, prob):
         ((i, j) for i in range(12) for j in range(12) if i != j), key=lambda p: prob[p]
     ):
         p = prob[i, j] * 100
-        if p <= 0:
+        if not np.isfinite(p) or p <= 0:
             continue
         ax.add_patch(
             FancyArrowPatch(
@@ -111,7 +111,7 @@ def graph(fig, prob):
                 shrinkB=7.8,
                 lw=0.15 + 0.5 * p,
                 color=BLUE,
-                alpha=0.12 + 0.85 * p / 5,
+                alpha=min(1.0, 0.12 + 0.85 * p / 5),
                 zorder=1,
             )
         )
@@ -151,6 +151,7 @@ def matrix(fig, prob):
     values = prob * 100
     values = values.copy()
     np.fill_diagonal(values, np.nan)
+    upper = max(5., float(np.nanmax(np.r_[values.ravel(), 0.])))
     cmap = plt.get_cmap("Blues").copy()
     cmap.set_bad("white")
     m = ax.pcolormesh(
@@ -159,7 +160,7 @@ def matrix(fig, prob):
         values,
         cmap=cmap,
         vmin=0,
-        vmax=5,
+        vmax=upper,
         linewidth=0.15,
         edgecolor="white",
         rasterized=False,
@@ -179,7 +180,7 @@ def matrix(fig, prob):
     ax.tick_params(length=0, pad=2, labelsize=5.8)
     for s in ax.spines.values():
         s.set_visible(False)
-    cb = fig.colorbar(m, cax=fig.add_axes([0.915, 0.715, 0.011, 0.235]), ticks=[0, 1, 2, 3, 4, 5])
+    cb = fig.colorbar(m, cax=fig.add_axes([0.915, 0.715, 0.011, 0.235]), ticks=np.linspace(0, upper, 6))
     cb.set_label("Transition probability (%)", fontsize=6, labelpad=3)
     cb.ax.tick_params(labelsize=5.7, length=2)
     cb.outline.set_linewidth(0.4)

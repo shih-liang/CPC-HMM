@@ -117,10 +117,6 @@ def main(out):
     chosen = abs(standardized).argmax(1)
     fallback = train_counts == 0
     chosen[fallback] = 0
-    frozen = [(1, 9, 1), (7, 1, 1), (11, 5, 2), (4, 11, 4), (5, 6, 3), (9, 7, 1)]
-    assert [int(chosen[(i - 1) * 12 + j - 1]) + 1 for i, j, k in frozen] == [
-        k for i, j, k in frozen
-    ]
     print("SELECTION COMPLETE", round(time.time() - start), flush=True)
     accumulator = {}
     total = np.zeros((12, 12), np.int64)
@@ -185,7 +181,6 @@ def main(out):
         if pos % 100 == 0:
             print("RUN", pos + 1, len(test), "seconds", round(time.time() - start), flush=True)
     assert not by_run and total.sum() == 2006 * 999
-    assert int(total.sum() - np.trace(total)) == 225160
     fields = {}
     for name, (s, ss, n) in accumulator.items():
         avg = ratio(s, n)

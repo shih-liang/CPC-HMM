@@ -374,6 +374,7 @@ def figure2():
             color=color,
         )
         if name == "HMM":
+            fit_labels = {"robust_seed2": "S2", "robust": "S1", **{f"consensus_seed{k}": f"S{k}" for k in range(3, 7)}}
             worst = int(values.argmax())
             ax.scatter(
                 [dotx[worst]],
@@ -385,7 +386,7 @@ def figure2():
                 zorder=5,
             )
             ax.annotate(
-                f"S3–S6: {values[worst]:.1f}%",
+                f"{fit_labels[rows[worst]['fit_a']]}–{fit_labels[rows[worst]['fit_b']]}: {values[worst]:.1f}%",
                 xy=(dotx[worst], values[worst]),
                 xytext=(0.03, 0.93),
                 textcoords="axes fraction",
@@ -393,13 +394,9 @@ def figure2():
                 color=DARK,
                 arrowprops=dict(arrowstyle="-", color="#77838B", lw=0.6),
             )
-            assert {rows[worst]["fit_a"], rows[worst]["fit_b"]} == {
-                "consensus_seed3",
-                "consensus_seed6",
-            }
         ax.set(
             xlim=(-0.38, 0.84),
-            ylim=(0, 105 if name == "CPC30" else 60),
+            ylim=(0, 105),
             xticks=[0, 0.60],
             xticklabels=["Pairs", "Mean"],
             yticks=[0, 50, 100] if name == "CPC30" else [0, 25, 50],

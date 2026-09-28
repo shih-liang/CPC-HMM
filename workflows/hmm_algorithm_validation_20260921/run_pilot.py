@@ -1,6 +1,6 @@
 """Run the bounded EM versus Variational Bayes comparison.
 
-This is not the official MATLAB HMM-MAR implementation; executes on import.
+Our Gaussian EM and Variational Bayes implementations; executes on import.
 """
 
 import os
@@ -29,10 +29,16 @@ D = 50
 L = 1200
 starts = np.arange(0, len(x), L)
 p = priors(x, K)
+seed_file = R / "seeds.json"
+if os.environ.get("SEEDS"):
+    seeds = [int(s) for s in os.environ["SEEDS"].split(",")]
+elif seed_file.exists():
+    seeds = json.loads(seed_file.read_text())
+else:
+    seeds = np.random.default_rng().choice(2**32, size=6, replace=False).tolist()
+seed_file.write_text(json.dumps(seeds))
 for method in os.environ.get("METHODS", "em,vb").split(","):
-    for seed in map(
-        int, os.environ.get("SEEDS", ",".join(map(str, range(20260906, 20260912)))).split(",")
-    ):
+    for seed in seeds:
         dest = R / f"{method}_{seed}.npz"
         if dest.exists() and dest.stat().st_size > 0:
             continue

@@ -147,7 +147,7 @@ for g in gs:
 meta = {
     "training": "REST1_LR only, 1003 participants",
     "hilbert": "FFT separately within each 1200-frame scan",
-    "input": "preexisting filtered/zscored fs4 BOLD; filtering provenance still pending",
+    "input": "ICA-FIX BOLD; fifth-order 0.01–0.10 Hz filter, TR 0.72 s, odd padding 33; standardized after fs4 resampling",
     "vertices": V,
     "complex_components": 50,
     "real_components": 100,

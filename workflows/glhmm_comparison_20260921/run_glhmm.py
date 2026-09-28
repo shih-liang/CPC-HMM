@@ -85,7 +85,7 @@ def source_provenance(core):
 
 
 source = source_provenance(sys.modules[glhmm.__module__].__file__)
-seed = int(sys.argv[1])
+seed = int(sys.argv[1]) if len(sys.argv) > 1 else int(np.random.default_rng().integers(2**32))
 R = P / "results"
 R.mkdir(exist_ok=True)
 meta = R / f"glhmm_{seed}.json"

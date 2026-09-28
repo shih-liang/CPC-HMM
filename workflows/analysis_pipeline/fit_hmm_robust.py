@@ -7,9 +7,10 @@ import os
 import time
 import json
 import argparse
+import secrets
 
 args = argparse.ArgumentParser()
-args.add_argument("--seed", type=int, default=20260906)
+args.add_argument("--seed", type=int, help="Optional reproducible initialization; random by default")
 args.add_argument("--tag", default="robust")
 args.add_argument("--iterations", type=int, default=100)
 args = args.parse_args()
@@ -31,6 +32,15 @@ for directory in (P / "data", P / "results"):
 H = Path(
     os.path.join(os.environ.get("HCP_ICA_ROOT", "/configure/HCP_ICA_ROOT"), "X_ICA50_zscore.npy")
 )
+metadata_path = P / f"results/hmm_{args.tag}_metadata.json"
+seed_path = P / f"results/hmm_{args.tag}_seed.json"
+if seed_path.exists():
+    args.seed = json.loads(seed_path.read_text())["seed"]
+elif metadata_path.exists():
+    args.seed = json.loads(metadata_path.read_text())["seed"]
+elif args.seed is None:
+    args.seed = secrets.randbits(32)
+seed_path.write_text(json.dumps({"seed": args.seed}))
 rng = np.random.default_rng(args.seed)
 K = 12
 V = 50

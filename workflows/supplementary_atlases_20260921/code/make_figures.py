@@ -143,7 +143,7 @@ def cpc():
     fig.text(
         0.035,
         0.955,
-        "REST1 LR basis · 4,801 cortical vertices · first 30 CPCs retain 52.7% of analytic variance",
+        f"REST1 LR basis · {len(indices):,} cortical vertices · first 30 CPCs retain {variance.sum():.1f}% of analytic variance",
         fontsize=6.7,
     )
     for k in range(30):
