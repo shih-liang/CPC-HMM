@@ -37,7 +37,7 @@ The recorded packaging runtime was Python 3.14.7; this is not a tested compatibi
 
 ## Data and configuration
 
-The study uses **ICA-FIX-denoised resting-state fMRI data downloaded from the Human Connectome Project (HCP)**. The analysis scripts consume cortical BOLD arrays and ICA50 time series prepared from these data for this study; these derived arrays are distinct from the downloaded HCP files. HCP preprocessing and ICA-FIX denoising are not rerun by this repository. Time series, trained weights, spatial source files and prepared figure-data bundles are not included.
+The study uses **ICA-FIX-denoised resting-state fMRI data downloaded from the Human Connectome Project (HCP)**. Cortical BOLD arrays are prepared from these data. The ICA50 spatial maps and corresponding time courses come from the HCP-provided 50-component group-ICA release (HCP1200 MSMAll); this study does not refit ICA50. The HMM scripts read the supplied within-scan standardized time courses from the local array `X_ICA50_zscore.npy`. HCP preprocessing and ICA-FIX denoising are not rerun by this repository. Time series, trained weights, spatial source files and prepared figure-data bundles are not included.
 
 The study uses 1,003 participants, four acquisitions per participant and 1,200 frames per acquisition. Scan order is participant × `[REST1_LR, REST1_RL, REST2_LR, REST2_RL]`. Training uses REST1_LR, decoder checkpoint selection uses REST1_RL, and evaluation uses REST2_LR/RL of the same participants.
 
