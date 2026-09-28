@@ -1,6 +1,6 @@
-"""Fit the reference regularized Gaussian EM HMM in ICA50 coordinates.
+"""Fit additional regularized EM HMM initializations for reliability analysis.
 
-Runs are independent 1200-frame sequences. This script executes on import.
+Reads ICA50 data and writes fit-specific posteriors; executes on import.
 """
 
 import os
@@ -12,6 +12,7 @@ args = argparse.ArgumentParser()
 args.add_argument("--seed", type=int, default=20260906)
 args.add_argument("--tag", default="robust")
 args.add_argument("--iterations", type=int, default=100)
+args.add_argument("--acquisition", type=int, default=0)
 args = args.parse_args()
 os.environ.setdefault("NUMBA_NUM_THREADS", "8")
 from pathlib import Path
@@ -23,9 +24,11 @@ from numba import njit, prange
 P = Path(
     os.path.join(
         os.environ.get("HCP_DERIVATIVES", "/configure/HCP_DERIVATIVES"),
-        "wave_rsn_revision_20260906",
+        "wave_rsn_revision_20260906/revision_20260910",
     )
 )
+for directory in (P / "data", P / "results"):
+    directory.mkdir(parents=True, exist_ok=True)
 H = Path(
     os.path.join(os.environ.get("HCP_ICA_ROOT", "/configure/HCP_ICA_ROOT"), "X_ICA50_zscore.npy")
 )
@@ -35,13 +38,12 @@ V = 50
 L = 1200
 start = time.time()
 raw = np.load(H, mmap_mode="r").reshape(4012, L, V)
-x = np.asarray(raw[np.arange(1003) * 4], dtype=np.float64).reshape(-1, V)
+x = np.asarray(raw[(np.arange(1003) * 4 + args.acquisition)], dtype=np.float64).reshape(-1, V)
 N = len(x)
 
 
 @njit(parallel=True)
 def fb(B, A, pi):
-    """Run scaled forward-backward independently for B shaped (runs, time, states)."""
     S, T, K = B.shape
     G = np.empty_like(B)
     XX = np.zeros((S, K, K))
@@ -81,7 +83,6 @@ def fb(B, A, pi):
 
 
 def emissions(data, means, covs):
-    """Evaluate full-covariance Gaussian log densities for each observation/state."""
     out = np.empty((len(data), K))
     for k in range(K):
         chol = cholesky(covs[k], lower=True)
@@ -93,7 +94,6 @@ def emissions(data, means, covs):
 
 
 def infer(data, means, covs, A, pi):
-    """Infer posterior probabilities without joining separate acquisition boundaries."""
     e = emissions(data, means, covs)
     shift = e.max(1)
     B = np.exp(e - shift[:, None]).reshape(-1, L, K)
@@ -151,7 +151,7 @@ for it in range(len(history), args.iterations):
         covariances=covs,
         transition=A,
         initial=pi,
-        training_scans=np.arange(1003) * 4,
+        training_scans=(np.arange(1003) * 4 + args.acquisition),
     )
     histpath.write_text(json.dumps(history, indent=2))
     if it >= 49 and abs(history[-1]["mean_loglik"] - history[-2]["mean_loglik"]) < 1e-5:
@@ -173,7 +173,7 @@ np.save(P / f"results/hmm_{args.tag}_loglik_per_scan.npy", scores)
 (P / f"results/hmm_{args.tag}_metadata.json").write_text(
     json.dumps(
         {
-            "training": "REST1_LR only",
+            "training": ["REST1_LR", "REST1_RL", "REST2_LR", "REST2_RL"][args.acquisition],
             "n_states": K,
             "seed": args.seed,
             "covariance_floor": 0.01,

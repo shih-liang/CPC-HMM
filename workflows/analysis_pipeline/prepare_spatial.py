@@ -15,6 +15,9 @@ P = Path(
         "wave_rsn_revision_20260906",
     )
 )
+for directory in (P / "data", P / "results"):
+    directory.mkdir(parents=True, exist_ok=True)
+subjects_dir = Path(os.environ.get("SUBJECTS_DIR", "/opt/freesurfer/subjects"))
 out = {}
 E = Path(
     os.path.join(
@@ -25,7 +28,7 @@ E = Path(
 for hemi, h in [("lh", "L"), ("rh", "R")]:
     for surface in ["inflated", "pial", "sphere"]:
         v, f = nib.freesurfer.read_geometry(
-            f"/opt/freesurfer/subjects/fsaverage4/surf/{hemi}.{surface}"
+            subjects_dir / "fsaverage4/surf" / f"{hemi}.{surface}"
         )
         out[f"{h}_{surface}_vertices"] = v
         out[f"{h}_faces"] = f

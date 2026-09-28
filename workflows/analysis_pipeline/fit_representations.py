@@ -20,6 +20,8 @@ P = Path(
         "wave_rsn_revision_20260906",
     )
 )
+for directory in (P / "data", P / "results"):
+    directory.mkdir(parents=True, exist_ok=True)
 R = Path(os.environ.get("HCP_CORTICAL_ROOT", "/configure/HCP_CORTICAL_ROOT"))
 torch.set_num_threads(4)
 dev = torch.device(os.environ.get("HCP_DEVICE", "cuda:1"))

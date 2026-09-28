@@ -1,34 +1,36 @@
 # Generate the figure inputs
 
-This repository includes the retained analysis programs as well as the renderers. The study source is ICA-FIX-denoised resting-state fMRI data downloaded from HCP. The programs below use prepared cortical BOLD arrays and the HCP-provided ICA50 time courses, together with cortical surfaces and geometric eigenmodes. ICA50 refers to the HCP1200 MSMAll 50-component group-ICA release; the study does not refit these components. They do not rerun HCP preprocessing or ICA-FIX denoising. Conversion and organization of downloaded inputs into the local arrays and calculation of the supplied geometric eigenmodes are external steps. The HMM input `X_ICA50_zscore.npy` contains the supplied within-scan standardized ICA50 time courses; its original conversion script is not included. Neither the time series nor trained models are distributed here.
+This repository includes the retained analysis programs as well as the renderers. The study source is ICA-FIX-denoised resting-state fMRI data downloaded from HCP. The programs below use prepared cortical BOLD arrays and the HCP-provided ICA50 time courses, together with cortical surfaces and geometric eigenmodes. ICA50 refers to the HCP1200 MSMAll 50-component group-ICA release; the study does not refit these components. They do not rerun HCP preprocessing or ICA-FIX denoising. Conversion and organization of downloaded inputs are provided in `workflows/prepare_inputs/`; start with [PREPROCESSING.md](PREPROCESSING.md). Geometric eigenmodes are spatial inputs, with their format conversion included. The HMM input `X_ICA50_zscore.npy` contains the supplied within-scan standardized ICA50 time courses; the included converter reproduces the recovered per-run standardization. Neither the time series nor trained models are distributed here.
 
-Install `requirements-analysis.txt`. Set `HCP_DERIVATIVES`, `HCP_CORTICAL_ROOT`, `HCP_ICA_ROOT`, and, for spatial extraction, `HCP_ICA_SPATIAL_FILE`. The original spatial extractor expects FreeSurfer fsaverage4 under `/opt/freesurfer/subjects`; adapt this input path for your installation. `HCP_DEVICE` selects the device in the original CPCA scripts (default `cuda:1`); decoder scripts expose `--device`.
+Install `requirements-analysis.txt`. Set `HCP_DERIVATIVES`, `HCP_CORTICAL_ROOT`, `HCP_ICA_ROOT`, and, for spatial extraction, `HCP_ICA_SPATIAL_FILE`. Set `SUBJECTS_DIR` to your FreeSurfer subjects directory; its default is `/opt/freesurfer/subjects`. The spatial extractor reads `fsaverage4/surf/` there. `HCP_DEVICE` selects the device for CPCA fitting (default `cuda:1`) and reliability (default `cuda:0`); decoder scripts expose `--device`.
 
 ## Shared inputs and ordering
 
 The retained study code expects 1,003 participants × four acquisitions × 1,200 frames. Acquisition order within each participant is REST1_LR, REST1_RL, REST2_LR, REST2_RL. Cortical BOLD is `HCP_CORTICAL_ROOT/input_hmm_order/group_fs4_concat_z_hmm_order.npy`, shape `(4814400, 5124)` before vertex exclusion. ICA input is `HCP_ICA_ROOT/X_ICA50_zscore.npy`, reshaped `(4012, 1200, 50)` in the identical order. Geometric inputs are under `HCP_DERIVATIVES/wmy/geometry/Eigenmodes_fs4`.
 
-Below, `BASE` means `HCP_DERIVATIVES/wave_rsn_revision_20260906`; `REV` means `BASE/revision_20260910`. Use a fresh derivative tree with `data/` and `results/` folders. Some original programs execute on import and open writable arrays: execute them as scripts, not as importable libraries. Full-cohort fitting is computationally expensive and is not launched by installation.
+Below, `BASE` means `HCP_DERIVATIVES/wave_rsn_revision_20260906`; `REV` means `BASE/revision_20260910`. Use a fresh derivative tree with `data/` and `results/` folders under both `BASE` and `REV`. Some original programs execute on import and open writable arrays: execute them as scripts, not as importable libraries. Full-cohort fitting is computationally expensive and is not launched by installation.
 
 REST1_LR fits the basis and decoder; REST1_RL selects decoder checkpoints; REST2_LR/RL evaluates them in the same participants. This is acquisition transfer. The six-HMM agreement mask is an evaluation subset, not a new training target.
 
 ## Upstream representations, HMM and decoders
 
-Programs are in `workflows/original_pipeline/`:
+Programs are in `workflows/analysis_pipeline/`. These programs implement the study’s CPCA, Gaussian EM HMM, decoding and reliability analyses:
 
 | Order | Program | Generated inputs |
 |---|---|---|
-| 1 | `original_fit_representations.py` | REST1_LR CPCA/PCA basis and projections under `BASE/data` |
-| 2 | `original_fit_extended_components.py` | Extended training covariance, basis and `cpca_scores_200.npy`; the first 30 coefficients are used by current state analyses |
-| 3 | `original_prepare_spatial.py` | `surfaces_and_eigenmodes.npz` from supplied geometry and FreeSurfer surfaces |
-| 4 | `original_geometry_analysis.py` | Per-CPC geometric energy increments and spatial component properties |
-| 5 | `original_fit_hmm_robust.py --seed … --tag … --iterations …` | Original reference HMM posteriors and parameters under `BASE` |
+| 1 | `fit_representations.py` | REST1_LR CPCA/PCA basis and projections under `BASE/data` |
+| 2 | `fit_extended_components.py` | Extended training covariance, basis and `cpca_scores_200.npy`; the first 30 coefficients are used by current state analyses |
+| 3 | `prepare_spatial.py` | `surfaces_and_eigenmodes.npz` from supplied geometry and FreeSurfer surfaces |
+| 4 | `geometry_analysis.py` | Per-CPC geometric energy increments and spatial component properties |
+| 5 | `fit_hmm_robust.py --seed … --tag … --iterations …` | Original reference HMM posteriors and parameters under `BASE` |
 | 6 | `fit_hmm_reliability.py --seed … --tag … --iterations …` | Additional HMM fits under `REV` |
-| 7 | `original_train_lower_component_decoders.py --counts 3,5,10,20,30,40,50 --device cuda:0` | CPC-count checkpoints and held-out predictions; bundled `rank_protocol.json` supplies the recorded training settings |
+| 7 | `train_lower_component_decoders.py --counts 3,5,10,20,30,40,50 --device cuda:0` | CPC-count checkpoints and held-out predictions; bundled `rank_protocol.json` supplies the recorded training settings |
 | 8 | `cpca_reliability.py` | Acquisition-specific CPC bases, overlap, subspace and variance statistics under `REV` |
 | 9 | `evaluate_reliability.py` | Training-derived HMM matching, six-fit masks, decoding and reliability statistics under `REV` |
 
 The matching evaluator reads `robust_seed2` and `consensus_seed5` from `BASE`, and `robust`, `consensus_seed3`, `consensus_seed4`, `consensus_seed6` from `REV`. The original `robust` posterior under `BASE` is also required for the decoder's original two-fit validation criterion. Preserve these distinct fit versions when replaying the study. Do not replace all tags with copies of one fit. The fitting scripts' default iteration cap is not a prescription for recreating every archived fit: use its recorded seed/iteration settings or provide the archived models.
+
+The decoder computes the two-fit evaluation agreement mask directly from the posteriors using its training-derived matching. Extended CPCA reads the target label from the bundled `rank_protocol.json` for descriptive metadata only; CPCA fitting does not depend on an HMM target.
 
 Some final analysis programs retain assertions for the recorded cohort, event counts and common-frame counts. They reproduce this study's existing fits; arbitrary refits may require revisiting those replay assertions and will not necessarily reproduce the paper's numbers.
 
@@ -36,7 +38,7 @@ Some final analysis programs retain assertions for the recorded cohort, event co
 
 `cpca_figure1/code/prepare_sources.py --source SOURCE_PACKAGE --root workflows/cpca_figure1` prepares the group summary inputs. `component_variance.py --root workflows/cpca_figure1` generates participant-level component and cumulative variance summaries used for the SD error bars. Then run `make_figure.py`.
 
-The source package layout consists of `figure_data/cpca_basis_REST1_LR.npz` (from `REV/data`), `figure_data/surfaces_and_eigenmodes.npz` (from `BASE/data`), and `source_data/` containing the `cpca_*` reliability CSVs from `REV/results`. Copy `BASE/results/cpca_component_properties.csv` there as `original_cpca_component_properties.csv`. Figure 1's default basis path is `REV/HCP_wave_RSN_4fig_revision_20260910/figure_data/cpca_basis_REST1_LR.npz`; preserve that layout or edit its input constant.
+Run `workflows/prepare_inputs/prepare_figure_sources.py --derivatives HCP_DERIVATIVES --output SOURCE_PACKAGE` to assemble the source directory. Its layout consists of `figure_data/cpca_basis_REST1_LR.npz` (from `REV/data`), `figure_data/surfaces_and_eigenmodes.npz` (from `BASE/data`), and `source_data/` containing the `cpca_*` reliability CSVs from `REV/results`. Copy `BASE/results/cpca_component_properties.csv` there as `original_cpca_component_properties.csv`. Figure 1 reads its basis directly from `REV/data/cpca_basis_REST1_LR.npz`.
 
 Supplementary Figure 1 reads the same basis and surfaces. Set `HCP_SOURCE_PACKAGE` to this source package or place these two NPZ files in its `source_data/` directory.
 

@@ -15,6 +15,8 @@ P = Path(
         "wave_rsn_revision_20260906",
     )
 )
+for directory in (P / "data", P / "results"):
+    directory.mkdir(parents=True, exist_ok=True)
 b = np.load(P / "data/training_bases.npz")
 s = np.load(P / "data/surfaces_and_eigenmodes.npz")
 c = b["complex_vectors"].conj().astype(complex)

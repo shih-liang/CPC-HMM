@@ -16,6 +16,8 @@ P = Path(
         "wave_rsn_revision_20260906",
     )
 )
+for directory in (P / "data", P / "results"):
+    directory.mkdir(parents=True, exist_ok=True)
 torch.set_num_threads(4)
 dev = os.environ.get("HCP_DEVICE", "cuda:1")
 raw = np.load(
@@ -43,7 +45,7 @@ h[1 : L // 2] = 2
             "fit": "REST1_LR only; per-scan Hilbert transform; same masked cortical inputs",
             "validation": "REST1_RL, select hyperparameters and component count",
             "evaluation": "REST2_LR/RL already inspected in previous analyses; retrospective comparison, not untouched confirmation",
-            "fixed_target": json.loads((P / "results/selected_hmm.json").read_text())["tag"],
+            "fixed_target": json.loads(Path(__file__).with_name("rank_protocol.json").read_text())["target"],
             "decoder": "Cartesian complex coordinates; common 400 input slots, 50-frame past window, hidden128/64; real PCA rank controls",
             "grid": "Learning rate 0.001 or 0.0003; weight decay 0.0001 or 0.001; maximum30epochs, validation early stopping; same budget across counts",
         },

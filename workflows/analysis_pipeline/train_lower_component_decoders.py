@@ -72,12 +72,8 @@ vagree = other[val, 100:1100:10].argmax(-1) == inv[alpha[val, 100:1100:10].argma
 VM = torch.tensor(vagree.ravel(), device=dev)
 vn_agree = int(vagree.sum())
 assert vn_agree > 0
-maskfile = np.load(P / "data/hmm_agreement_frames_20260909.npz")
-assert np.array_equal(test, maskfile["test_scan_indices"])
-agree = maskfile["agree"]
-assert np.array_equal(
-    agree, other[test, 100:1100].argmax(-1) == inv[alpha[test, 100:1100].argmax(-1)]
-)
+# Use the training-derived label mapping; no archived test-mask file is required.
+agree = other[test, 100:1100].argmax(-1) == inv[alpha[test, 100:1100].argmax(-1)]
 Y = torch.from_numpy(np.array(alpha).reshape(-1, K)).to(dev)
 raw = np.load(P / "data/cpca_scores_200.npy", mmap_mode="r")
 

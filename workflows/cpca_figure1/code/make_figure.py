@@ -25,10 +25,7 @@ BASE = Path(
         "wave_rsn_revision_20260906",
     )
 )
-BASIS = (
-    BASE
-    / "revision_20260910/HCP_wave_RSN_4fig_revision_20260910/figure_data/cpca_basis_REST1_LR.npz"
-)
+BASIS = BASE / "revision_20260910/data/cpca_basis_REST1_LR.npz"
 SCORES = BASE / "data/cpca_scores_200.npy"
 RAW = Path(
     os.path.join(

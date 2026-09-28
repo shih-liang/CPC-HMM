@@ -20,8 +20,10 @@ P = Path(
     )
 )
 Q = P / "revision_20260910"
+for directory in (Q / "data", Q / "results"):
+    directory.mkdir(parents=True, exist_ok=True)
 torch.set_num_threads(2)
-dev = "cuda:0"
+dev = os.environ.get("HCP_DEVICE", "cuda:0")
 start = time.time()
 b = np.load(P / "data/extended_training_bases.npz")
 idx = b["vertex_indices"]
