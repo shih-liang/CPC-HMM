@@ -1,0 +1,2 @@
+# Official pinned source used for the comparison; upstream GPL-3.0.
+glhmm @ git+https://github.com/vidaurre/glhmm.git@9a5c59acfc7956eb3b579fc92e54d108708a5d02

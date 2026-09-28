@@ -1,0 +1,6 @@
+{
+  "HCP_DERIVATIVES": "/path/to/analysis-derivatives",
+  "HCP_CORTICAL_ROOT": "/path/to/cortical-inputs",
+  "HCP_ICA_ROOT": "/path/to/ica-inputs",
+  "HCP_SOURCE_PACKAGE": "/path/to/original-figure-source-package"
+}

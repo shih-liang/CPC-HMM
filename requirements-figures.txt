@@ -1,0 +1,2 @@
+-r requirements-core.txt
+nibabel==5.4.2
