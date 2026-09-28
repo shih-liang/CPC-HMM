@@ -1,0 +1,8 @@
+-r requirements-figures.txt
+pandas
+scikit-learn
+numba
+torch
+h5py
+requests
+threadpoolctl

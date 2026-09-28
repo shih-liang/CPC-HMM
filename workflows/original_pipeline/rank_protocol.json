@@ -1,0 +1,105 @@
+{
+  "counts": [
+    3,
+    5,
+    10,
+    20,
+    30,
+    40,
+    50
+  ],
+  "target": "robust_seed2",
+  "representation": "First K complex components from the frozen REST1_LR basis; Cartesian Re/Im coordinates",
+  "train": "REST1_LR, all core frames stride4, soft HMM posterior targets",
+  "validation": "REST1_RL, core frames stride10",
+  "test": "REST2_LR/RL, all core frames100:1100; frozen HMM-agreement mask",
+  "input_slots": 400,
+  "real_slots": "0:K",
+  "imaginary_slots": "200:200+K",
+  "window_lags": [
+    -49,
+    -48,
+    -47,
+    -46,
+    -45,
+    -44,
+    -43,
+    -42,
+    -41,
+    -40,
+    -39,
+    -38,
+    -37,
+    -36,
+    -35,
+    -34,
+    -33,
+    -32,
+    -31,
+    -30,
+    -29,
+    -28,
+    -27,
+    -26,
+    -25,
+    -24,
+    -23,
+    -22,
+    -21,
+    -20,
+    -19,
+    -18,
+    -17,
+    -16,
+    -15,
+    -14,
+    -13,
+    -12,
+    -11,
+    -10,
+    -9,
+    -8,
+    -7,
+    -6,
+    -5,
+    -4,
+    -3,
+    -2,
+    -1,
+    0
+  ],
+  "hidden_layers": [
+    128,
+    64
+  ],
+  "dropout": 0.1,
+  "seed": 20260908,
+  "optimizer": "AdamW",
+  "configuration_grid": [
+    [
+      0.001,
+      0.0001
+    ],
+    [
+      0.001,
+      0.001
+    ],
+    [
+      0.0003,
+      0.0001
+    ],
+    [
+      0.0003,
+      0.001
+    ]
+  ],
+  "maximum_epochs_per_configuration": 30,
+  "early_stopping": "Patience4; continue when either all-validation MSE improves by >1e-5 or agreement-validation accuracy improves by >1e-4",
+  "selection_rules": [
+    "Lowest all-frame validation MSE",
+    "Highest agreement-frame validation accuracy; ties use lower agreement-frame MSE"
+  ],
+  "mask": "HMM label permutation fixed using REST1_LR posterior correlations; agreement on validation and test computed without fitting alignment there",
+  "purpose": "Test whether fewer components improve conditional accuracy; all ranks have a common encoding, HMM, architecture, optimizer grid and training budget",
+  "limits": "Exploratory reuse of previously examined test acquisitions; same participants across scans; not unseen-family validation. Agreement is a target-derived retrospective subset. Effective active capacity changes with rank despite common padded architecture."
+}

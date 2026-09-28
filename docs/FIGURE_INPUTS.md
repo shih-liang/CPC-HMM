@@ -1,6 +1,6 @@
 # Required figure inputs
 
-Run the renderers on copies of the existing figure-source bundles. This release does not recompute full-cohort summaries. Subject order, masks, state matching and array content must remain those used for the current figures.
+Generate inputs using the programs and placement instructions in [ANALYSIS.md](ANALYSIS.md), then run the renderers. Subject order, masks and state matching must remain consistent throughout.
 
 ## Main Fig. 1
 

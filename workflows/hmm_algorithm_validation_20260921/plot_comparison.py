@@ -64,6 +64,9 @@ for ax, key, title, scale in zip(
         if scale == 100
         else ("Correlation" if key.endswith("correlation") else "ARI")
     )
-f.suptitle("100 participants · matched initialization · batch EM and Variational Bayes updates", fontsize=10)
+f.suptitle(
+    "100 participants · matched initialization · batch EM and Variational Bayes updates",
+    fontsize=10,
+)
 f.savefig(P / "pilot_comparison.pdf")
 f.savefig(P / "pilot_comparison.png", dpi=220)

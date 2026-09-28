@@ -1,6 +1,6 @@
 # Current manuscript figures and HMM method comparisons
 
-This code-only release contains **only the current main Figures 1–4, Supplementary Figures 1–3, their required drawing helpers, and the EM / Variational Bayes / official GLHMM comparisons**. Obsolete figure entrypoints, exploratory transition analyses, CPC/decoder training pipelines, historical READMEs and old code diffs have been removed.
+This code-only release contains the analysis programs that generate the current main Figures 1–4 and Supplementary Figures 1–3, their drawing programs, and the EM / Variational Bayes / official GLHMM comparisons. See [analysis order and output mapping](docs/ANALYSIS.md). Input data and fitted models are supplied separately.
 
 ## Install
 
@@ -27,7 +27,7 @@ Fitting official GLHMM separately requires `requirements-glhmm.txt` and substant
 | Supplementary Fig. 1 | `python workflows/supplementary_atlases_20260921/code/make_figures.py` |
 | Supplementary Figs. 2–3 | `python workflows/supplementary_figures_2_3_20260921/code/make_supplements.py` |
 
-Figure 1 requires configured full-data paths; other figures can use their prepared source bundles. Copy paths.example.json to paths.local.json, fill only needed roots and remove unused placeholders. Example:
+To generate figure inputs, install `requirements-analysis.txt` and follow [ANALYSIS.md](docs/ANALYSIS.md). Figure 1 requires configured full-data paths; other renderers use generated source bundles. Copy paths.example.json to paths.local.json, fill only needed roots and remove unused placeholders. Example:
 
 ```bash
 python run.py --paths paths.local.json --script workflows/cpca_figure1/code/make_figure.py -- --root workflows/cpca_figure1
