@@ -55,21 +55,41 @@ python workflows/prepare_inputs/prepare_hcp.py \
 
 This path reads already filtered/resampled inputs and performs only within-run standardization and ordered assembly. Both hemispheres are required for every run.
 
-## Geometric eigenmode format conversion
+## Generate geometric eigenmodes
 
-The study's supplied geometric eigenmodes are distinct from the CPCA basis and HCP ICA50 maps. The following program converts full or masked fsaverage4 mode arrays (`.txt`, `.npy`, or metric `.gii`) to the files used by the analysis:
+Provide the white, pial and sphere surfaces as local files.
+
+Manually download and extract the [fsaverage4 surface archive used by Nilearn 0.12.1](https://osf.io/28uma/download). Place these six files in `/path/to/templates/fsaverage4`:
+
+- `white_left.gii.gz`, `white_right.gii.gz`
+- `pial_left.gii.gz`, `pial_right.gii.gz`
+- `sphere_left.gii.gz`, `sphere_right.gii.gz`
+
+Templates must preserve the vertex/face ordering of the functional resampling sphere. The generator checks this ordering and stops on a mismatch. Do not substitute a reindexed template without also updating the functional resampling inputs.
+
+The target registration spheres and area metrics are distributed in [HCPpipelines resample_fsaverage](https://github.com/Washington-University/HCPpipelines/tree/master/global/templates/standard_mesh_atlases/resample_fsaverage). Place the required files directly in the `--templates` directory used above.
+
+`prepare_hcp.py` writes `geometry_masks/REST1_{LR,RL}.{L,R}.mask.npy` from the reference participant's filtered/resampled signals, before standardization. Each vertex is retained if any time point is nonzero. The default reference is `100206`; it must be in the subject list. `--geometry-reference ID` explicitly selects another participant when needed. `geometry_masks/reference_subject.txt` records the selection. Do not derive this mask from standardized arrays, because standardization removes constant nonzero signals.
 
 ```bash
-python workflows/prepare_inputs/prepare_geometry.py \
-  --modes-pattern '/path/to/modes_{hemi}.txt' \
-  --values-pattern '/path/to/eigenvalues_{hemi}.txt' \
-  --mask-pattern '/path/to/mask_{hemi}.txt' \
+python workflows/prepare_inputs/generate_geometry.py \
+  --surface-dir /path/to/templates/fsaverage4 \
+  --templates /path/to/templates \
+  --mask-dir /path/to/new-inputs/geometry_masks \
   --output /path/to/analysis-derivatives/wmy/geometry/Eigenmodes_fs4
 ```
 
-Masks must be binary arrays of 2,562 vertices. Eigenmode rows must be in full fsaverage4 order or in the ascending retained-vertex order of that mask; columns and supplied eigenvalues must follow ascending geometric eigenvalue order. The first 200 modes, including the constant mode, are retained. The recorded masks retain 2,395 left and 2,406 right vertices.
+The generator uses the recovered study procedure:
 
-This is format conversion, not a substitute derivation of the geometric modes. The original mesh/eigensolver and mapping used to obtain the supplied geometric modes have not yet been independently recovered. Do not identify newly computed modes as numerically identical to these study inputs.
+1. Average corresponding white and pial coordinates on fsaverage4 (2,562 vertices per hemisphere).
+2. Check face ordering against the fsaverage4 sphere and the HCP target registration sphere.
+3. Require identical REST1_LR/RL functional-support masks. Retain only triangles whose three vertices survive the mask, and require a connected mesh without isolated vertices.
+4. Apply `lapy.Solver(tria).eigs(k=200)` separately to each hemisphere, with no explicit boundary-condition override. Include the constant mode.
+5. Save `eigenvalues_fs4_{L,R}.txt`, `eigenmodes_fs4_{L,R}.txt`, `{L,R}.fs4_mask.txt` and `{L,R}.fs4_idx.npy`. Eigenmode rows follow ascending retained-vertex indices; columns follow ascending eigenvalues.
+
+This follows the finite-element geometric eigenmode approach of [Pang et al. (2023)](https://doi.org/10.1038/s41586-023-06098-1), whose [reference implementation](https://github.com/NSBLab/BrainEigenmodes) uses fsLR32k midthickness surfaces and supplied cortical masks. Here the eigensystem is calculated directly on the masked fsaverage4 midpoint surface. The public dependency specifies LaPy 1.0.1; the historical environment version has not been established.
+
+For already generated eigenmodes, `prepare_geometry.py` remains an optional format converter (`--modes-pattern`, `--values-pattern`, `--mask-pattern`, `--output`); it is not needed after `generate_geometry.py`.
 
 ## Verification
 

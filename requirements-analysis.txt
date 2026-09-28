@@ -6,3 +6,4 @@ torch
 h5py
 requests
 threadpoolctl
+lapy==1.0.1

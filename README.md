@@ -15,11 +15,9 @@ Obtain these inputs under their providers' access terms:
 | HCP-provided ICA50 spatial maps | `groupICA_3T_HCP1200_MSMAll_d50.ica/melodic_IC.dscalar.nii` |
 | Cortical templates | S900 surfaces, registration spheres and vertex-area metrics listed in [PREPROCESSING.md](docs/PREPROCESSING.md) |
 | FreeSurfer surfaces | `fsaverage4/surf/{lh,rh}.{inflated,pial,sphere}` |
-| Geometric eigenmodes and masks | At least 200 ordered modes per hemisphere, eigenvalues, and binary fsaverage4 cortical masks |
+| Geometry surfaces | Nilearn fsaverage4 white, pial and sphere surfaces (manual download instructions below) |
 
 Here “downloaded data” means **HCP-preprocessed ICA-FIX data**. This repository does not rerun HCP preprocessing or estimate the official ICA50 decomposition.
-
-**Remaining input dependency:** geometric eigenmode derivation from cortical meshes is not included. `prepare_geometry.py` converts supplied modes and masks; it does not generate them. These files must be provided separately to run the complete workflow. HCP downloads alone are therefore not yet sufficient for end-to-end reproduction.
 
 Prepare `subjects.txt`, one participant ID per line. The current full-cohort analyses require 1,003 participants with all four 1,200-frame acquisitions. Use the same list and order for cortical and ICA data. The original cohort list and participant data are not bundled; changing participants changes the analysis. Conversion supports smaller subsets, but full-cohort fitting and figure analyses retain the study dimensions.
 
@@ -37,6 +35,20 @@ python -m pip install -r requirements-analysis.txt
 
 Install Connectome Workbench separately and make `wb_command` available. Fitting uses PyTorch; select an available device below. Full-cohort arrays and decoder training require substantial RAM and, when using CUDA, GPU memory. For plotting already generated inputs, `requirements-figures.txt` is sufficient.
 
+### Download geometry surfaces
+
+Download the geometry templates manually before preprocessing. The programs only read local files.
+
+Manually download and extract the [fsaverage4 surface archive used by Nilearn 0.12.1](https://osf.io/28uma/download). Place these six files in `/path/to/templates/fsaverage4`:
+
+- `white_left.gii.gz`, `white_right.gii.gz`
+- `pial_left.gii.gz`, `pial_right.gii.gz`
+- `sphere_left.gii.gz`, `sphere_right.gii.gz`
+
+Templates must preserve the vertex/face ordering of the functional resampling sphere. The generator checks this ordering and stops on a mismatch. Do not substitute a reindexed template without also updating the functional resampling inputs.
+
+The HCP resampling sphere files are included among the preprocessing templates listed in [PREPROCESSING.md](docs/PREPROCESSING.md).
+
 ### Convert cortical and ICA inputs
 
 Replace paths in these commands with your download locations:
@@ -50,12 +62,16 @@ python workflows/prepare_inputs/prepare_hcp.py \
   --templates /path/to/templates \
   --output /path/to/new-inputs
 
-python workflows/prepare_inputs/prepare_geometry.py \
-  --modes-pattern '/path/to/modes_{hemi}.txt' \
-  --values-pattern '/path/to/eigenvalues_{hemi}.txt' \
-  --mask-pattern '/path/to/mask_{hemi}.txt' \
+python workflows/prepare_inputs/generate_geometry.py \
+  --surface-dir /path/to/templates/fsaverage4 \
+  --templates /path/to/templates \
+  --mask-dir /path/to/new-inputs/geometry_masks \
   --output /path/to/analysis-derivatives/wmy/geometry/Eigenmodes_fs4
 ```
+
+The conversion also saves nonzero-support masks from participant `100206`'s REST1_LR and REST1_RL **before standardization**. This participant must be included in `subjects.txt`; for another cohort, explicitly select an included participant with `--geometry-reference ID`. Changing this reference can change the mask and geometric basis.
+
+`generate_geometry.py` averages fsaverage4 white/pial coordinates, removes masked vertices and their incident triangles, and computes 200 modes per hemisphere with LaPy, including the constant mode. It requires identical LR/RL masks and a connected mesh. Both preparation and generation require new output directories. These modes are computed directly on fsaverage4, following the finite-element approach of [Pang et al. (2023)](https://doi.org/10.1038/s41586-023-06098-1); the study uses a different mesh and functional-support mask from that paper's fsLR32k implementation.
 
 Actual cortical preprocessing is: surface smoothing with sigma 2.12 mm (volume sigma 0); fifth-order Butterworth 0.01–0.10 Hz filtering, TR 0.72 s, SOS forward/backward with 33-frame odd padding; `ADAP_BARY_AREA` resampling to fsaverage4; then within-run standardization. No pre-filter standardization, additional detrending or added global signal regression is performed. The literature's different standardization order is noted in the filter function. ICA50 time courses are standardized separately within each run, without additional filtering or ICA fitting.
 
@@ -75,7 +91,7 @@ export HCP_SOURCE_PACKAGE=/path/to/new-figure-sources
 export HCP_DEVICE=cuda:0
 ```
 
-`HCP_DERIVATIVES` contains generated analyses and supplied geometry. `HCP_SOURCE_PACKAGE` will be assembled from analysis outputs in step 4; it is not another HCP download. Alternatively, configure the data roots in `paths.local.json` using [paths.example.json](paths.example.json), and launch an individual program through `run.py --paths paths.local.json --script …`.
+`HCP_DERIVATIVES` contains generated analyses and geometric eigenmodes. `HCP_SOURCE_PACKAGE` will be assembled from analysis outputs in step 4; it is not another HCP download. Alternatively, configure the data roots in `paths.local.json` using [paths.example.json](paths.example.json), and launch an individual program through `run.py --paths paths.local.json --script …`.
 
 ## 3. Analyse
 
