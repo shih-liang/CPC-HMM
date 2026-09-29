@@ -286,10 +286,11 @@ def main(root, source):
             )
         )
 
-    fig = plt.figure(figsize=(7.4, 9.0))
+    # Close the space left by the removed schematic, preserving panel dimensions.
+    fig = plt.figure(figsize=(7.4, 8.28))
     fig.text(
         0.07,
-        0.974,
+        0.971739,
         "Cortical geometry and network-state information",
         fontsize=10.6,
         fontweight="bold",
@@ -297,16 +298,16 @@ def main(root, source):
     )
     fig.text(
         0.07,
-        0.954,
+        0.950000,
         "CPC spatial composition  |  Activity variance  |  Six-HMM common states",
         fontsize=7,
         color=GREY,
     )
 
-    # a: actual cortical surfaces and actual geometric eigenmodes, plus the projection relation.
+    # a: cortical surfaces and representative geometric eigenmodes.
     fig.text(
         0.07,
-        0.919,
+        0.911957,
         "a  A spatial basis defined by cortical geometry",
         fontsize=8.8,
         fontweight="bold",
@@ -314,11 +315,11 @@ def main(root, source):
     )
     orders = [1, 2, 3, 4, 5, 6, 10, 20, 50, 100, 150, 200]
     grid = fig.add_gridspec(
-        3, 4, left=0.265, right=0.95, bottom=0.649, top=0.888, hspace=0.36, wspace=0.15
+        3, 4, left=0.265, right=0.95, bottom=0.618478, top=0.878261, hspace=0.36, wspace=0.15
     )
-    fig.text(0.085, 0.875, "Cortical surface", fontsize=6.8, color=DARK)
-    for hemi, y in [("L", 0.757), ("R", 0.650)]:
-        ax = fig.add_axes([0.080, y, 0.14, 0.106])
+    fig.text(0.085, 0.864130, "Cortical surface", fontsize=6.8, color=DARK)
+    for hemi, y in [("L", 0.735870), ("R", 0.619565)]:
+        ax = fig.add_axes([0.080, y, 0.14, 0.115217])
         cortical_map(ax, surface, hemi)
         ax.text(
             -0.05,
@@ -336,7 +337,7 @@ def main(root, source):
         bounds = grid[position // 4, position % 4].get_position(fig)
         fig.text(
             (bounds.x0 + bounds.x1) / 2,
-            bounds.y1 + 0.002,
+            bounds.y1 + 0.002174,
             f"Mode {order}",
             ha="center",
             fontsize=6.5,
@@ -348,8 +349,8 @@ def main(root, source):
             values /= abs(values).max()
             cortical_map(fig.add_subplot(pair[0, j]), surface, hemi, values)
     arrow = FancyArrowPatch(
-        (0.221, 0.771),
-        (0.250, 0.771),
+        (0.221, 0.751087),
+        (0.250, 0.751087),
         transform=fig.transFigure,
         arrowstyle="-|>",
         mutation_scale=8,
@@ -359,58 +360,22 @@ def main(root, source):
     fig.add_artist(arrow)
     cb = fig.colorbar(
         ScalarMappable(norm=Normalize(-1, 1), cmap="RdBu_r"),
-        cax=fig.add_axes([0.495, 0.619, 0.24, 0.008]),
+        cax=fig.add_axes([0.495, 0.585870, 0.24, 0.008696]),
         orientation="horizontal",
         ticks=[-1, 0, 1],
     )
     cb.ax.tick_params(labelsize=5.5, length=1.8, pad=1)
     cb.set_label("Normalized geometric mode value", fontsize=6, labelpad=2)
-    fig.text(0.105, 0.555, "CPC spatial map", fontsize=7.5, color=DARK, va="center")
-    fig.add_artist(
-        FancyArrowPatch(
-            (0.268, 0.556),
-            (0.345, 0.556),
-            transform=fig.transFigure,
-            arrowstyle="-|>",
-            mutation_scale=8,
-            lw=0.8,
-            color=GREY,
-        )
-    )
-    fig.text(
-        0.368, 0.555, "QR projection", fontsize=7.5, fontweight="bold", color=BLUE, va="center"
-    )
-    fig.text(0.368, 0.537, "Separately in each hemisphere", fontsize=5.8, color=GREY)
-    fig.add_artist(
-        FancyArrowPatch(
-            (0.535, 0.556),
-            (0.605, 0.556),
-            transform=fig.transFigure,
-            arrowstyle="-|>",
-            mutation_scale=8,
-            lw=0.8,
-            color=GREY,
-        )
-    )
-    fig.text(
-        0.637,
-        0.554,
-        r"$\psi_k(r)\ \approx\ \sum_{m=1}^{M} b_{mk}\,\phi_m(r)$",
-        fontsize=10,
-        color=DARK,
-        va="center",
-    )
-
     # b: each column is one ordered QR increment, summed across hemispheres.
     fig.text(
         0.07,
-        0.493,
+        0.535870,
         "b  Individual geometric mode contributions to CPC1-30",
         fontsize=8.8,
         fontweight="bold",
         color=DARK,
     )
-    ax = fig.add_axes([0.095, 0.332, 0.765, 0.136])
+    ax = fig.add_axes([0.095, 0.360870, 0.765, 0.147826])
     mesh = ax.pcolormesh(
         np.arange(201) + 0.5,
         np.arange(31) + 0.5,
@@ -432,7 +397,7 @@ def main(root, source):
     )
     ax.tick_params(length=2)
     cb = fig.colorbar(
-        mesh, cax=fig.add_axes([0.883, 0.332, 0.012, 0.136]), ticks=[0.0001, 0.01, 1, 100]
+        mesh, cax=fig.add_axes([0.883, 0.360870, 0.012, 0.147826]), ticks=[0.0001, 0.01, 1, 100]
     )
     cb.ax.set_yticklabels(["0.0001", "0.01", "1", "100"])
     cb.ax.tick_params(labelsize=5.5, length=2)
@@ -441,9 +406,9 @@ def main(root, source):
 
     # c: same activity target and variance denominator for both representations.
     fig.text(
-        0.07, 0.265, "c  Activity variance retained", fontsize=8.8, fontweight="bold", color=DARK
+        0.07, 0.288043, "c  Activity variance retained", fontsize=8.8, fontweight="bold", color=DARK
     )
-    ax = fig.add_axes([0.095, 0.089, 0.374, 0.151])
+    ax = fig.add_axes([0.095, 0.096739, 0.374, 0.164130])
     orange = "#B57036"
     ax.plot(np.arange(1, 401), 100 * cortical_activity, color=BLUE, lw=1.8, label="CPCs", zorder=4)
     ax.plot(
@@ -504,8 +469,10 @@ def main(root, source):
     ax.legend(fontsize=5.4, frameon=False, loc="upper right")
 
     # d: geometric decoders scored on the same six-HMM unanimous REST2 frames.
-    fig.text(0.545, 0.265, "d  Network-state decoding", fontsize=8.8, fontweight="bold", color=DARK)
-    ax = fig.add_axes([0.595, 0.089, 0.355, 0.151])
+    fig.text(
+        0.545, 0.288043, "d  Network-state decoding", fontsize=8.8, fontweight="bold", color=DARK
+    )
+    ax = fig.add_axes([0.595, 0.096739, 0.355, 0.164130])
     geo_rows = list(decoding.values())
     ax.errorbar(
         [int(row["complex_coordinates"]) for row in geo_rows],
@@ -541,18 +508,18 @@ def main(root, source):
     handles, labels = ax.get_legend_handles_labels()
     ax.legend(handles[::-1], labels[::-1], fontsize=5.4, frameon=False, loc="lower right")
     fig.text(
-        0.535, 0.046, "Complex coordinates per frame (both hemispheres)", ha="center", fontsize=7
+        0.535, 0.050000, "Complex coordinates per frame (both hemispheres)", ha="center", fontsize=7
     )
     fig.text(
         0.07,
-        0.024,
+        0.026087,
         f"d, Six-HMM unanimous frames: {int(geo_rows[0]['frames']):,} ({100 * float(geo_rows[0]['coverage']):.2f}%). REST2 LR + RL; 50-frame windows.",
         fontsize=5.8,
         color=GREY,
     )
     fig.text(
         0.07,
-        0.009,
+        0.009783,
         f"Mean ± SD across {int(geo_rows[0]['participants']):,} participants with support. c, REST1_LR covariance.",
         fontsize=5.8,
         color=GREY,
