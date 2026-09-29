@@ -144,8 +144,8 @@ Follow the commands in [ANALYSIS.md](docs/ANALYSIS.md):
 | --- | --- |
 | 1 | Training/test component variance and single-CPC fields |
 | 2 | State-associated amplitude/phase, decoding versus CPC count, HMM/CPCA reproducibility |
-| 3 | Geometric expansion, activity variance, decoding with 30/100/200/300/400 bilateral geometric coordinates |
-| 4 | All 132 possible directed non-self transitions; training-selected CPCs; amplitude, phase and participant-level pre/post statistics |
+| 3 | Six panels: HMM transitions, individual CPC trajectories, step-length violins, and amplitude/phase/probability for all 132 directed transitions |
+| 4 | Geometric expansion, activity variance, decoding with 30/100/200/300/400 bilateral geometric coordinates |
 | Supplementary 1 | Spatial amplitude and phase for CPC1–30 |
 | Supplementary 2–3 | ICA50/HMM12 descriptions, CPC–ICA correspondence and state-associated cortical maps |
 
@@ -177,8 +177,8 @@ Generate and place each figure's analysis outputs using [ANALYSIS.md](docs/ANALY
 ```bash
 python workflows/cpca_figure1/code/make_figure.py --root workflows/cpca_figure1
 python workflows/main_results_figures_v4/code/plot_figures.py
-python workflows/figure3_geometry_grid/code/make_figure.py
-python workflows/figure4_distinct_cpcs_20260920/code/plot_figure4.py
+python workflows/figure3_wave_transitions/code/plot_figure3.py
+python workflows/figure4_geometry/code/make_figure.py
 python workflows/supplementary_atlases_20260921/code/make_figures.py
 python workflows/supplementary_figures_2_3_20260921/code/make_supplements.py
 ```

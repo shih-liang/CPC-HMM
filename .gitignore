@@ -17,3 +17,8 @@ config.local.json
 
 .ruff_cache/
 synthetic-demo/
+
+workflows/figure3_wave_transitions/source_data/
+workflows/figure3_wave_transitions/*.pdf
+workflows/figure3_wave_transitions/*.png
+workflows/figure3_wave_transitions/*.svg

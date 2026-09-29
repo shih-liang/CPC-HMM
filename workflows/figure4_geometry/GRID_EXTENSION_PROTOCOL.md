@@ -1,4 +1,4 @@
-# Figure 3: 30,100,200,300,400 bilateral geometric coordinates
+# Figure 4: 30,100,200,300,400 bilateral geometric coordinates
 
 User-requested extension, specified on 2026-09-18 before fitting the two new conditions. The earlier four-point results are known and remain archived; this is an explicit extension rather than a claim that all five conditions were chosen before those results.
 
@@ -6,8 +6,8 @@ User-requested extension, specified on 2026-09-18 before fitting the two new con
 
 - Display exactly 30,100,200,300,400 bilateral complex geometric coordinates per frame, corresponding to 15,50,100,150,200 eigenmodes per hemisphere.
 - Reuse completed models and predictions for 30,100,400 coordinates. Fit only the missing 200- and 300-coordinate decoders, using the existing native geometric score array. Do not repeat the cortical projection or refit any HMM/CPCA basis.
-- Preserve the 114-coordinate result as the prior variance-matched condition in archived source tables. It is not an accuracy point in the new Figure 3d. The variance comparison in panel c remains unchanged.
-- CPC30 decoding is not plotted in Figure 3d.
+- Preserve the 114-coordinate result as the prior variance-matched condition in archived source tables. It is not an accuracy point in the new Figure 4d. The variance comparison in panel c remains unchanged.
+- CPC30 decoding is not plotted in Figure 4d.
 
 ## Fitting rules for the two added conditions
 

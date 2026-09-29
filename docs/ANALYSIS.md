@@ -57,29 +57,32 @@ The first two programs generate state profiles, confusion, component-count accur
 
 ## Figure 3
 
-Programs are in `workflows/figure3_geometry_grid/code/`:
+Generate all six panels from the same score array and posterior file:
+
+```bash
+python workflows/figure3_wave_transitions/code/prepare_inputs.py \
+  --scores "$HCP_DERIVATIVES/wave_rsn_revision_20260906/data/cpca_scores_200.npy" \
+  --posterior "$HCP_DERIVATIVES/wave_rsn_revision_20260906/data/hmm_alpha_robust_seed2.npy" \
+  --output workflows/figure3_wave_transitions/source_data
+python workflows/figure3_wave_transitions/code/plot_figure3.py
+```
+
+The new source-data directory receives the HMM transition matrix, individual CPC examples, participant-weighted raw-step histograms and quartiles, and all 132 amplitude/phase/probability cells. No event matching, step-ratio panel, cumulative-distribution panel or step-length confidence interval is used. The pre/post significance calculation remains participant-level with joint BY correction. Undefined estimates remain missing.
+
+The three fixed illustration anchors are supplied in `example_anchors.csv`; changed fits use the nearest actual transition in the same run. Replace that file via `--examples` for a different participant order. These examples illustrate individual trajectories and are not a representative event sample. Full definitions and the input/output commands are in the [Figure 3 README](../workflows/figure3_wave_transitions/README.md).
+
+## Figure 4
+
+Programs are in `workflows/figure4_geometry/code/`:
 
 1. `geometry_activity.py --source /path/to/BASE --output /path/to/activity` generates covariance sufficient statistics and the retained-variance CSV/JSON files.
 2. `direct_decoding.py --stage project --output /path/to/HCP_DERIVATIVES/wave_geometry_decoder_20260918_01/results --device cuda:0` generates native geometric coefficients.
 3. Run the same program with `--stage fit --conditions geo15,geo50,geo200` and then `--stage summarize --conditions geo15,geo50,geo200` to generate the initial decoder predictions and summaries. These counts are per hemisphere.
 4. For the 100 and 150 modes-per-hemisphere additions, create `HCP_DERIVATIVES/wave_geometry_decoder_grid_20260918_01/results`, with links to `native_geometry_scores.npy` and `projection_validation.json` from the projection output. Run `fit_additional.py --condition geo100 --output … --device cuda:0` and repeat for `geo150`.
-5. `evaluate_consensus.py --output /path/to/fig3-evaluation` evaluates all five counts on the same six-fit common frames and writes `export/`.
-6. Copy the activity CSV/JSON files and the evaluation `export/` files to `figure3_geometry_grid/source_data/`. Add the basis, surfaces and `BASE/results/geometry_incremental_energy.npz`. Copy the generated `BASE/results/Figure2_geometry_summary.csv` as `original_geometry_summary.csv`. Then run `make_figure.py`.
+5. `evaluate_consensus.py --output /path/to/fig4-evaluation` evaluates all five counts on the same six-fit common frames and writes `export/`.
+6. Copy the activity CSV/JSON files and the evaluation `export/` files to `figure4_geometry/source_data/`. Add the basis, surfaces and `BASE/results/geometry_incremental_energy.npz`. Copy the generated `BASE/results/Figure2_geometry_summary.csv` as `original_geometry_summary.csv`. Then run `make_figure.py`.
 
 `evaluate_training.py` retains the training-set evaluation of saved decoders. The five plotted bilateral coordinate counts are 30, 100, 200, 300 and 400. Participant accuracy averages the available run-specific consensus accuracies; a run without consensus frames is undefined. Participants with no supported run are excluded from this summary, with the supported count saved in the output. `GRID_EXTENSION_PROTOCOL.md` records the decoder settings and the common-state evaluation definition.
-
-## Figure 4
-
-All analysis scripts now live beside the current renderer, in `workflows/figure4_distinct_cpcs_20260920/code/`:
-
-```bash
-python workflows/figure4_distinct_cpcs_20260920/code/aggregate_all.py --output /path/to/fig4-profiles
-python workflows/figure4_distinct_cpcs_20260920/code/aggregate_absolute_phase.py --output /path/to/fig4-profiles
-python workflows/figure4_distinct_cpcs_20260920/code/prepare_reference.py --profiles /path/to/fig4-profiles/results/all_transition_profiles.npz --phases /path/to/fig4-profiles/results/absolute_phase_profiles.npz --out /path/to/reference.npz
-python workflows/figure4_distinct_cpcs_20260920/code/aggregate_prepost.py --output /path/to/fig4-prepost --reference /path/to/reference.npz
-```
-
-Copy `all_transition_profiles.npz`, `absolute_phase_profiles.npz`, and `prepost_summary.npz` from those results directories into the current figure's `results/`, then run `plot_figure4.py`. Separate profile and pre/post output directories avoid completion-file collisions. The calculations cover all 132 directed non-self transitions; CPC selection uses training events. Pre/post significance uses participant-paired permutations with joint multiple-comparison correction.
 
 ## Supplementary Figures 2–3
 

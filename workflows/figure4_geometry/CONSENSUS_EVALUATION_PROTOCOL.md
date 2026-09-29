@@ -1,4 +1,4 @@
-# Figure 3 correction: six-HMM unanimous network states
+# Figure 4 correction: six-HMM unanimous network states
 
 Specified 2026-09-18 before calculating the corrected geometric-decoder accuracies.
 
@@ -9,11 +9,11 @@ Specified 2026-09-18 before calculating the corrected geometric-decoder accuraci
 - Rebuild this mask from the six posterior arrays and require exact equality with the archived `updated_consensus_masks.npz` fits6 mask and scan order. The number of selected frames is computed from the current fits.
 - Use both REST2 acquisitions, frames 100:1100, for all 1,003 participants. All four geometric representations use exactly the same selected frames and labels.
 - Reuse saved predictions for geometry15, geometry50, geometry57 and geometry200 per hemisphere (30,100,114,400 bilateral complex coordinates). Model fitting and validation remain unchanged. This matches the existing consensus analysis, which selects the evaluation frames rather than retraining the decoder on consensus frames.
-- Plot only geometric decoding results in Figure 3d. CPC30 decoding belongs in Figure 2. Re-evaluate the archived CPC30 predictions only as a reproducibility check of the existing six-fit target definition; do not plot that benchmark.
+- Plot only geometric decoding results in Figure 4d. CPC30 decoding belongs in Figure 2. Re-evaluate the archived CPC30 predictions only as a reproducibility check of the existing six-fit target definition; do not plot that benchmark.
 
 ## Estimands and uncertainty
 
-- Per-run accuracy is the number of correct common-state predictions divided by the number of six-fit unanimous frames in that run. Average the two run accuracies within each participant, then report the participant mean and SD. This is the figure's point and error bar, consistent with the previous Figure 3 display.
+- Per-run accuracy is the number of correct common-state predictions divided by the number of six-fit unanimous frames in that run. Average the two run accuracies within each participant, then report the participant mean and SD. This is the figure's point and error bar, consistent with the previous Figure 4 display.
 - Report pooled correct/selected-frame accuracy separately. With variable agreement coverage, it need not equal the participant mean. Preserve this distinction when reporting CPC30 accuracy.
 - Use 2,000 participant bootstrap resamples with seed 20260918, keeping each participant's two runs together. Provide intervals for both participant-mean and pooled accuracy. Report aggregate state support and per-state recall.
 - Require nonzero selected support in every run, as established by the initial mask audit (minimum 76 frames per run). If this check fails, stop and report the discrepancy.

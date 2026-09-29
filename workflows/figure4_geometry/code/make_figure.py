@@ -1,4 +1,4 @@
-"""Figure 3: cortical geometry, activity retention and matched state decoding."""
+"""Figure 4: cortical geometry, activity retention and matched state decoding."""
 
 import os  # Public release: configurable data roots.
 from pathlib import Path
@@ -560,7 +560,7 @@ def main(root, source):
 
     retain_vectors(fig)
     for ext in ["pdf", "svg", "png"]:
-        fig.savefig(root / f"Figure_3_geometric_basis.{ext}", dpi=300)
+        fig.savefig(root / f"Figure_4_geometric_basis.{ext}", dpi=300)
     # Inspect text boxes to catch cropped labels before PDF review.
     fig.canvas.draw()
     renderer = fig.canvas.get_renderer()
