@@ -144,7 +144,7 @@ Follow the commands in [ANALYSIS.md](docs/ANALYSIS.md):
 | --- | --- |
 | 1 | Training/test component variance and single-CPC fields |
 | 2 | State-associated amplitude/phase, decoding versus CPC count, HMM/CPCA reproducibility |
-| 3 | Six panels: HMM transitions, individual CPC trajectories, step-length violins, and amplitude/phase/probability for all 132 directed transitions |
+| 3 | Six panels: HMM transitions, individual CPC trajectories, changes in CPC coefficients, and amplitude/phase/probability for all 132 directed transitions |
 | 4 | Geometric expansion, activity variance, decoding with 30/100/200/300/400 bilateral geometric coordinates |
 | Supplementary 1 | Spatial amplitude and phase for CPC1–30 |
 | Supplementary 2–3 | ICA50/HMM12 descriptions, CPC–ICA correspondence and state-associated cortical maps |

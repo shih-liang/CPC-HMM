@@ -141,7 +141,7 @@ fig.legend(
     markerscale=0.7,
 )
 
-heading(136, 3, "c", "Step lengths")
+heading(136, 3, "c", "Changes in CPC\ncoefficients")
 inputs = np.load(source_dir / "displacement_plot_inputs.npz")
 with (source_dir / "violin_statistics.csv").open() as handle:
     rows = {row["condition"]: row for row in csv.DictReader(handle)}
@@ -228,11 +228,11 @@ a.set(
     xticklabels=["No state\ntransition", "State\ntransition"],
     xlim=(-0.55, 1.55),
     ylim=(0, ymax),
-    ylabel="Step length (a.u.)",
+    ylabel="Difference between frames (a.u.)",
 )
 a.locator_params(axis="y", nbins=5)
 a.tick_params(axis="x", length=0, pad=3, labelsize=6)
-a.set_ylabel("Step length (a.u.)", fontsize=6, labelpad=1)
+a.set_ylabel("Difference between frames (a.u.)", fontsize=6, labelpad=1)
 violin_handles = [
     Line2D([], [], marker="D", ls="", color="black", markersize=3, label="Mean"),
     Line2D([], [], color="black", lw=1.2, label="Median"),

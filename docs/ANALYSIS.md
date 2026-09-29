@@ -67,7 +67,7 @@ python workflows/figure3_wave_transitions/code/prepare_inputs.py \
 python workflows/figure3_wave_transitions/code/plot_figure3.py
 ```
 
-The new source-data directory receives the HMM transition matrix, individual CPC examples, participant-weighted raw-step histograms and quartiles, and all 132 amplitude/phase/probability cells. No event matching, step-ratio panel, cumulative-distribution panel or step-length confidence interval is used. The pre/post significance calculation remains participant-level with joint BY correction. Undefined estimates remain missing.
+The new source-data directory receives the HMM transition matrix, individual CPC examples, participant-weighted histograms and quartiles of Euclidean distances between consecutive 30-CPC complex vectors, and all 132 amplitude/phase/probability cells. These distances describe the change over one TR (0.72 s). Panel c compares intervals with and without a change in HMM state label; it uses no event matching, ratios or confidence intervals. The amplitude/phase pre/post significance calculation remains participant-level with joint BY correction. Undefined estimates remain missing.
 
 The three fixed illustration anchors are supplied in `example_anchors.csv`; changed fits use the nearest actual transition in the same run. Replace that file via `--examples` for a different participant order. These examples illustrate individual trajectories and are not a representative event sample. Full definitions and the input/output commands are in the [Figure 3 README](../workflows/figure3_wave_transitions/README.md).
 
