@@ -2,9 +2,9 @@
 
 Needs source_data containing spatial geometry, incremental energy, activity statistics and five-count decoding tables.
 
-Panel a displays cortical surfaces and representative geometric eigenmodes. Panel b shows individual geometric-mode contributions on the left and cumulative reconstruction curves for every CPC on the right. Curve colours identify CPC number; the black dashed line is the equal-weight mean across CPC1-30. The four-panel figure is 7.4 × 8.28 inches.
+Panel a displays cortical surfaces and representative geometric eigenmodes. Panel b shows individual geometric-mode contributions; panel c shows cumulative reconstruction curves for every CPC. Curve colours identify CPC number; the black dashed line is the equal-weight mean across CPC1-30. Panels d and e show activity variance and state decoding. The five-panel figure is 7.4 × 8.28 inches.
 
-Both parts of panel b use each CPC's full spatial energy as the denominator. The renderer obtains the cumulative curves by summing the existing QR energy contributions; no additional analysis inputs are required. Counts in b denote geometric modes per hemisphere. Counts in c and d denote bilateral complex coefficients per frame.
+Panels b and c use each CPC's full spatial energy as the denominator. The renderer obtains the cumulative curves by summing the existing QR energy contributions; no additional analysis inputs are required. Counts in b and c denote geometric modes per hemisphere. Counts in d and e denote bilateral complex coefficients per frame.
 
 From the repository root:
 

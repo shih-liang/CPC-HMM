@@ -366,16 +366,16 @@ def main(root, source):
     )
     cb.ax.tick_params(labelsize=5.5, length=1.8, pad=1)
     cb.set_label("Normalized geometric mode value", fontsize=6, labelpad=2)
-    # b: individual QR contributions and their cumulative capture of each CPC.
+    # b: individual geometric contributions to each CPC.
     fig.text(
         0.07,
         0.535870,
-        "b  Geometric contributions and CPC reconstruction",
+        "b  Geometric contributions",
         fontsize=8.8,
         fontweight="bold",
         color=DARK,
     )
-    ax = fig.add_axes([0.095, 0.350870, 0.415, 0.157826])
+    ax = fig.add_axes([0.095, 0.350870, 0.370, 0.157826])
     mesh = ax.pcolormesh(
         np.arange(201) + 0.5,
         np.arange(31) + 0.5,
@@ -397,16 +397,24 @@ def main(root, source):
     )
     ax.tick_params(length=2)
     cb = fig.colorbar(
-        mesh, cax=fig.add_axes([0.531, 0.350870, 0.010, 0.157826]), ticks=[0.0001, 0.01, 1, 100]
+        mesh, cax=fig.add_axes([0.486, 0.350870, 0.010, 0.157826]), ticks=[0.0001, 0.01, 1, 100]
     )
     cb.ax.set_yticklabels(["0.0001", "0.01", "1", "100"])
     cb.ax.tick_params(labelsize=5.5, length=2)
     cb.minorticks_off()
     cb.set_label("Spatial energy contribution (%)", fontsize=6, labelpad=4)
 
-    # Use the same denominator as the heatmap: the full spatial energy of each CPC.
+    # c: use the same denominator as the heatmap: each CPC's full spatial energy.
     # Each abscissa includes this many geometric modes in each hemisphere.
-    ax = fig.add_axes([0.675, 0.350870, 0.275, 0.157826])
+    fig.text(
+        0.635,
+        0.535870,
+        "c  Cumulative CPC reconstruction",
+        fontsize=8.8,
+        fontweight="bold",
+        color=DARK,
+    )
+    ax = fig.add_axes([0.690, 0.350870, 0.260, 0.157826])
     cpc_colors = plt.get_cmap("viridis")(np.linspace(0.05, 0.88, 30))
     cpc_cmap = ListedColormap(cpc_colors)
     mode_counts = np.arange(201)
@@ -449,9 +457,9 @@ def main(root, source):
     cb.ax.set_title("CPC", fontsize=5.8, pad=2)
     cb.ax.tick_params(labelsize=5, length=1.5, pad=1)
 
-    # c: same activity target and variance denominator for both representations.
+    # d: same activity target and variance denominator for both representations.
     fig.text(
-        0.07, 0.288043, "c  Activity variance retained", fontsize=8.8, fontweight="bold", color=DARK
+        0.07, 0.288043, "d  Activity variance retained", fontsize=8.8, fontweight="bold", color=DARK
     )
     ax = fig.add_axes([0.095, 0.096739, 0.374, 0.164130])
     orange = "#B57036"
@@ -513,9 +521,9 @@ def main(root, source):
     ax.tick_params(length=2)
     ax.legend(fontsize=5.4, frameon=False, loc="upper right")
 
-    # d: geometric decoders scored on the same six-HMM unanimous REST2 frames.
+    # e: geometric decoders scored on the same six-HMM unanimous REST2 frames.
     fig.text(
-        0.545, 0.288043, "d  Network-state decoding", fontsize=8.8, fontweight="bold", color=DARK
+        0.545, 0.288043, "e  Network-state decoding", fontsize=8.8, fontweight="bold", color=DARK
     )
     ax = fig.add_axes([0.595, 0.096739, 0.355, 0.164130])
     geo_rows = list(decoding.values())
@@ -558,14 +566,14 @@ def main(root, source):
     fig.text(
         0.07,
         0.026087,
-        f"d, Six-HMM unanimous frames: {int(geo_rows[0]['frames']):,} ({100 * float(geo_rows[0]['coverage']):.2f}%). REST2 LR + RL; 50-frame windows.",
+        f"e, Six-HMM unanimous frames: {int(geo_rows[0]['frames']):,} ({100 * float(geo_rows[0]['coverage']):.2f}%). REST2 LR + RL; 50-frame windows.",
         fontsize=5.8,
         color=GREY,
     )
     fig.text(
         0.07,
         0.009783,
-        f"Mean ± SD across {int(geo_rows[0]['participants']):,} participants with support. c, REST1_LR covariance.",
+        f"Mean ± SD across {int(geo_rows[0]['participants']):,} participants with support. d, REST1_LR covariance.",
         fontsize=5.8,
         color=GREY,
     )
