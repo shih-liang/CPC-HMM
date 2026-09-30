@@ -4,7 +4,6 @@ Run with the existing python. Text stays editable in PDF/SVG.
 
 import os  # Public release: configurable data roots.
 from pathlib import Path
-import json
 import numpy as np
 import matplotlib
 
@@ -250,20 +249,4 @@ def ica_hmm():
         header="state,initial_probability",
         comments="",
     )
-    summary = {
-        "CPC_count": 30,
-        "ICA_count": 50,
-        "HMM_states": 12,
-        "ICA_cortical_vertices": cortical.shape[1],
-        "ICA_full_grayordinates": maps.shape[1],
-        "ICA_display": "cortical surface only; unthresholded weights divided by each component cortical absolute maximum",
-        "HMM_reference": "HMM_robust_seed2; no permutation",
-        "HMM_min_covariance_eigenvalue": float(np.linalg.eigvalsh(cov).min()),
-        "HMM_covariance_limits": [-2.5, 2.5],
-        "HMM_mean_limits": [-1.5, 1.5],
-        "ICA_limits": [-1, 1],
-        "surface_images_dpi": 450,
-        "text": "native PDF TrueType and SVG text",
-    }
-    (ROOT / "provenance/numerical_validation.json").write_text(json.dumps(summary, indent=2))
     save(fig, "Supplementary_Figure_2_ICA50_HMM12_revised")

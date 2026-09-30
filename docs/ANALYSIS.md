@@ -40,7 +40,7 @@ Cohort dimensions and input consistency are checked. Accuracy, common-frame cove
 
 Run `workflows/prepare_inputs/prepare_figure_sources.py --derivatives HCP_DERIVATIVES --output SOURCE_PACKAGE` to assemble the source directory. Its layout consists of `figure_data/cpca_basis_REST1_LR.npz` (from `REV/data`), `figure_data/surfaces_and_eigenmodes.npz` (from `BASE/data`), and `source_data/` containing the `cpca_*` reliability CSVs from `REV/results`. The assembler also copies the component-property and geometric-summary files. Figure 1 reads its basis directly from `REV/data/cpca_basis_REST1_LR.npz`.
 
-Supplementary Figure 1 reads the same basis and surfaces. Set `HCP_SOURCE_PACKAGE` to this source package or place these two NPZ files in its `source_data/` directory.
+Supplementary Figure 1 reads the same basis and surfaces. Set `HCP_SOURCE_PACKAGE` to this source package; its renderer creates `source_data/` and copies the two NPZ inputs. Alternatively, unset this variable and place both files in the figure's `source_data/` directory. An explicitly configured bundle takes precedence over previous local copies.
 
 ## Figure 2
 
@@ -80,7 +80,7 @@ Programs are in `workflows/figure4_geometry/code/`:
 3. Run the same program with `--stage fit --conditions geo15,geo50,geo200` and then `--stage summarize --conditions geo15,geo50,geo200` to generate the initial decoder predictions and summaries. These counts are per hemisphere.
 4. For the 100 and 150 modes-per-hemisphere additions, create `HCP_DERIVATIVES/wave_geometry_decoder_grid_20260918_01/results`, with links to `native_geometry_scores.npy` and `projection_validation.json` from the projection output. Run `fit_additional.py --condition geo100 --output … --device cuda:0` and repeat for `geo150`.
 5. `evaluate_consensus.py --output /path/to/fig4-evaluation` evaluates all five counts on the same six-fit common frames and writes `export/`.
-6. Copy the activity CSV/JSON files and the evaluation `export/` files to `figure4_geometry/source_data/`. Add the basis, surfaces and `BASE/results/geometry_incremental_energy.npz`. Copy the generated `BASE/results/Figure2_geometry_summary.csv` as `original_geometry_summary.csv`. Then run `make_figure.py`.
+6. Copy the activity CSV/JSON files and the evaluation `export/` files to `workflows/figure4_geometry/source_data/`. With `HCP_SOURCE_PACKAGE` set, `make_figure.py` copies the basis, surfaces, geometric energy and spatial summary from that bundle. Alternatively, unset the variable and supply these four files locally, naming `BASE/results/Figure2_geometry_summary.csv` as `original_geometry_summary.csv`. Then run `make_figure.py`.
 
 `evaluate_training.py` retains the training-set evaluation of saved decoders. The five plotted bilateral coordinate counts are 30, 100, 200, 300 and 400. Participant accuracy averages the available run-specific consensus accuracies; a run without consensus frames is undefined. Participants with no supported run are excluded from this summary, with the supported count saved in the output. `GRID_EXTENSION_PROTOCOL.md` records the decoder settings and the common-state evaluation definition.
 
@@ -100,4 +100,4 @@ State reconstruction uses `Re(C Uᴴ)`. Maps first average frames within each st
 
 ## Verification scope
 
-Execution checks cover full-cohort CPCA fitting and coordinate generation, one reference HMM refit, seven CPC decoder fits, five geometric-coordinate decoder fits, transition and correspondence analyses, and all main and supplementary renderers. Six-initialization agreement and optional EM/Variational Bayes/GLHMM comparison statistics were rerun using saved posterior/model files; all of those models were not retrained. Raw ICA-FIX preprocessing was checked on available reference scans rather than the full cohort. Recorded seeds were used for numerical replay; routine runs may use new random seeds. These checks therefore do not establish a completely fresh download-to-all-models run.
+Execution checks use the existing local HCP data; they do not download the dataset again. They cover full-cohort CPCA fitting and coordinate generation, one reference HMM refit, seven CPC decoder fits, five geometric-coordinate decoder fits, transition and correspondence analyses, and all main and supplementary renderers. Six-initialization agreement and optional EM/Variational Bayes/GLHMM comparison statistics were rerun using saved posterior/model files; all of those models were not retrained. ICA-FIX preprocessing was checked on available reference scans rather than the full cohort. Recorded seeds were used for numerical replay; routine runs may use new random seeds.

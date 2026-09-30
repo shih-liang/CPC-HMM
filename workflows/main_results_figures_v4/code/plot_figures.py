@@ -2,7 +2,6 @@
 
 from pathlib import Path
 import csv
-import hashlib
 import json
 import os
 
@@ -114,25 +113,12 @@ def cbar(fig, m, rect, label, ticks=None, horizontal=False):
 def save(fig, name):
     for ext in ["pdf", "svg", "png"]:
         fig.savefig(ROOT / f"{name}.{ext}", dpi=300)
-    # Record text positions for basic clipping checks; visual review remains required.
-    fig.canvas.draw()
-    renderer = fig.canvas.get_renderer()
-    boxes = []
-    for text in fig.findobj(matplotlib.text.Text):
-        if text.get_visible() and text.get_text().strip():
-            b = text.get_window_extent(renderer)
-            boxes.append(dict(text=text.get_text(), bounds=[float(v) for v in b.bounds]))
-    (ROOT / "provenance" / f"{name}_text_boxes.json").write_text(
-        json.dumps(dict(figure_pixels=list(fig.bbox.size), text=boxes), indent=2)
-    )
     plt.close(fig)
     print("SAVED", name, flush=True)
 
 
 def figure2():
     fig = plt.figure(figsize=(180 / 25.4, 200 / 25.4))
-    square_axes = []
-    stat = json.loads((DATA / "decoding_summary.json").read_text())
     profiles = np.load(DATA / "state_profiles.npz")
     example = read("Figure3_example_posteriors.csv")
     heading(fig, "a", "Network state fitting example", 0.065, 0.973, size=8)
@@ -226,11 +212,10 @@ def figure2():
     y = np.array([float(r["participant_mean"]) * 100 for r in ranks])
     sd = np.array([float(r["participant_sd"]) * 100 for r in ranks])
     ax = fig.add_axes([0.075, 0.060, 0.185, 0.1665])
-    square_axes.append(("d_accuracy", ax))
     ax.axvline(30, color="#C3C9CD", ls=":", lw=0.7)
     ax.plot(x, y, "o-", color=BLUE, ms=2.6, lw=1.0, zorder=2)
     ax.scatter([30], [y[4]], s=18, color=ORANGE, zorder=3)
-    bars = ax.errorbar(
+    ax.errorbar(
         x, y, yerr=sd, fmt="none", ecolor=DARK, elinewidth=1.0, capsize=2.8, capthick=1.0, zorder=4
     )
     ax.set(
@@ -244,29 +229,11 @@ def figure2():
     ax.tick_params(axis="x", labelsize=5.5)
     ax.xaxis.label.set_size(6.3)
     ax.yaxis.label.set_size(6.3)
-    segments = [v.tolist() for v in bars.lines[2][0].get_segments()]
-    (ROOT / "provenance/accuracy_errorbars.json").write_text(
-        json.dumps(
-            dict(
-                estimator="mean of participant accuracies; participant accuracy averages available REST2 run accuracies",
-                interval="sample SD across 1003 participants (ddof=1)",
-                components=x.tolist(),
-                mean_percent=y.tolist(),
-                sd_percentage_points=sd.tolist(),
-                drawn_errorbar_segments=segments,
-                capsize_points=2.8,
-                linewidth_points=1.0,
-            ),
-            indent=2,
-        )
-    )
-
     heading(fig, "e", "State decoding", 0.305, 0.260, size=7.7)
     rows = read("confusion.csv")
     cm = np.array([float(r["row_fraction"]) for r in rows]).reshape(12, 12)
     counts = np.array([int(one(rows, state=k, predicted_state=1)["support"]) for k in range(1, 13)])
     ax = fig.add_axes([0.323, 0.060, 0.170, 0.153])
-    square_axes.append(("e_confusion", ax))
     m = matrix(ax, cm * 100, cmap="Blues", vmax=100)
     ax.set(
         xticks=np.arange(12),
@@ -339,7 +306,6 @@ def figure2():
         spread = float(values.std(ddof=1))
         assert len(values) == (6 if name == "CPC30" else 15)
         ax = fig.add_axes([left, 0.066, 0.151, 0.1359])
-        square_axes.append(("f_" + name + "_pairs", ax))
         ax.axhline(100 if name == "CPC30" else 50, color="#ADB5BB", ls=":", lw=0.7, zorder=1)
         dotx = np.linspace(-0.22, 0.22, len(values))
         ax.scatter(dotx, values, s=12, color=color, edgecolors="white", linewidths=0.25, zorder=3)
@@ -453,48 +419,10 @@ def figure2():
         text.set_position((x, (y - shift) * vertical_scale))
     phase_legend.set_bbox_to_anchor((0.777, 0.479 * vertical_scale))
 
-    geometry = []
-    for name, ax in square_axes:
-        box = ax.get_position()
-        width = box.width * 180
-        height = box.height * height_mm
-        geometry.append(
-            dict(panel=name, width_mm=width, height_mm=height, aspect_ratio=width / height)
-        )
-    (ROOT / "provenance/figure2_layout.json").write_text(
-        json.dumps(
-            dict(
-                size_mm=[180, height_mm],
-                panel_order=[
-                    "a_example",
-                    "b_amplitude",
-                    "c_phase",
-                    "d_accuracy",
-                    "e_confusion",
-                    "f_reproducibility",
-                ],
-                bottom_axes=geometry,
-            ),
-            indent=2,
-        )
-    )
     save(fig, "Figure_2_CPC_states_and_reproducibility")
 
 
 if __name__ == "__main__":
     assert json.loads((DATA / "aggregation_complete.json").read_text())["status"] == "PASS"
     assert json.loads((DATA / "comparison_complete.json").read_text())["status"] == "PASS"
-    (ROOT / "provenance").mkdir(exist_ok=True)
     figure2()
-    (ROOT / "provenance/figure_generation.json").write_text(
-        json.dumps(
-            {
-                "status": "COMPLETE",
-                "figure": "Figure_2_CPC_states_and_reproducibility",
-                "code_sha256": hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
-                "pdf_fonttype": 42,
-                "svg_fonttype": "none",
-            },
-            indent=2,
-        )
-    )

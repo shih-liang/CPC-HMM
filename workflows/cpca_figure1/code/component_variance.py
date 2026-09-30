@@ -3,20 +3,16 @@
 from pathlib import Path
 import argparse
 import csv
-import hashlib
-import json
 import time
 import numpy as np
 from scipy.signal import hilbert
-from make_figure import BASE, BASIS, SCORES, RAW, fingerprint, read_csv
+from make_figure import BASE, BASIS, SCORES, RAW, read_csv
 
 RUN_VARIANCE = BASE / "revision_20260910/results/cpca_test_variance_participants.csv"
 
 
 def main(root):
     started = time.time()
-    sources = [BASIS, SCORES, RAW, RUN_VARIANCE]
-    before = [fingerprint(p) for p in sources]
     reference = {}
     for row in read_csv(RUN_VARIANCE):
         scan = int(row["scan_index"])
@@ -121,52 +117,7 @@ def main(root):
     analysis = root / "analysis"
     analysis.mkdir(exist_ok=True)
     np.save(analysis / "component_variance_participants.npy", participants)
-    after = [fingerprint(p) for p in sources]
-    assert before == after
-    report = dict(
-        status="PASS",
-        script_sha256=hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
-        estimator="Mean of participant-average REST2 LR/RL per-CPC analytic energy fractions",
-        basis="Fixed REST1_LR basis; no refitting",
-        core_frames=[100, 1099],
-        n_participants=1003,
-        n_runs=2006,
-        bootstrap=dict(
-            unit="participant",
-            resamples=2000,
-            seed=20260910,
-            skipped_prior_draws=4000,
-            percentiles=[2.5, 97.5],
-            runs_kept_together=True,
-        ),
-        denominator="Archived rank-50 fraction times each component share of first-50 score energy",
-        maximum_cumulative_fraction_error=cumulative_error,
-        raw_projection_relative_errors=projection_errors,
-        original_rank30_summary_reproduced=original_summary.tolist(),
-        sum_of_component_means_and_total_CI=new_total.tolist(),
-        source_preserved=True,
-        input_fingerprints=before,
-        run_variance_sha256=hashlib.sha256(RUN_VARIANCE.read_bytes()).hexdigest(),
-        source_summary_sha256=hashlib.sha256(dest.read_bytes()).hexdigest(),
-        distribution_summary_sha256=hashlib.sha256(distribution.read_bytes()).hexdigest(),
-        cumulative_distribution_sha256=hashlib.sha256(cumulative_file.read_bytes()).hexdigest(),
-        sd_definition="Sample standard deviation across 1003 participant means; ddof=1",
-        seconds=time.time() - started,
-    )
-    (root / "provenance/component_variance_validation.json").write_text(
-        json.dumps(report, indent=2)
-    )
-    print(
-        json.dumps(
-            dict(
-                status="PASS",
-                seconds=report["seconds"],
-                maximum_cumulative_fraction_error=cumulative_error,
-                total_mean_and_ci=new_total.tolist(),
-            )
-        ),
-        flush=True,
-    )
+    print(f"Saved component variance summaries ({time.time() - started:.1f} s)", flush=True)
 
 
 if __name__ == "__main__":

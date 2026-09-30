@@ -4,7 +4,7 @@ All data and templates must be downloaded manually after reviewing their provide
 
 ## Sources and order
 
-Use the HCP ICA-FIX `*_Atlas_hp2000_clean.dtseries.nii` resting-state scans and the official HCP1200 MSMAll `NodeTimeseries_3T_HCP1200_MSMAll_ICAd50_ts2` release. Each subject's ICA50 text file has 4,800 rows and 50 columns. The study uses four contiguous 1,200-frame blocks in REST1_LR, REST1_RL, REST2_LR, REST2_RL order. Supply a plain-text subject list, one ID per line, in the desired order. The published full-cohort analyses require the recorded 1,003 participants; the converter permits smaller verification subsets.
+Use the HCP ICA-FIX `*_Atlas_hp2000_clean.dtseries.nii` resting-state scans and the official HCP1200 MSMAll `NodeTimeseries_3T_HCP1200_MSMAll_ICAd50_ts2` release. Each subject's ICA50 text file has 4,800 rows and 50 columns. The study uses four contiguous 1,200-frame blocks in REST1_LR, REST1_RL, REST2_LR, REST2_RL order. Supply a plain-text subject list, one ID per line, in the desired order. The full-cohort analyses use all 1,003 participants with the required four scans and ICA50 data; the converter permits smaller verification subsets. Reuse files already stored locally without downloading them again.
 
 Missing files, unexpected dimensions and non-finite inputs cause errors rather than silently dropping runs. Outputs require a new directory. Only a completed conversion writes `conversion_settings.txt` with `complete=true`; an interrupted directory must not be passed to analysis.
 
@@ -97,4 +97,4 @@ For already generated eigenmodes, `prepare_geometry.py` remains an optional form
 
 For one participant, filtering and resampling of all four archived smoothed acquisitions matched the stored outputs with standardized RMSE below 8 × 10⁻¹¹. Starting from the two available REST1 ICA-FIX files, the complete conversion matched the stored cortical arrays with maximum absolute difference at most 1.2 × 10⁻⁷. ICA50 conversion matched all four runs exactly. These checks include the position of standardization relative to filtering/resampling. The filter uses the actual study settings; its code comment records the literature comparison. The full 1,003-participant models were not refitted for this update.
 
-See [ANALYSIS.md](ANALYSIS.md) for subsequent fitting and [README.md](../README.md#preparing-the-figure-source-directory) for automated figure-source assembly.
+See [ANALYSIS.md](ANALYSIS.md) for subsequent fitting and [README.md](../README.md#4-plot) for automated figure-source assembly.

@@ -4,7 +4,6 @@ import os  # Public release: configurable data roots.
 from pathlib import Path
 import argparse
 import csv
-import hashlib
 import json
 import shutil
 import numpy as np
@@ -17,7 +16,9 @@ from matplotlib.colors import Normalize, LogNorm, ListedColormap
 from matplotlib.cm import ScalarMappable
 from matplotlib.patches import FancyArrowPatch
 
-DEFAULT_SOURCE = Path(os.environ.get("HCP_SOURCE_PACKAGE", "/configure/HCP_SOURCE_PACKAGE"))
+DEFAULT_SOURCE = (
+    Path(os.environ["HCP_SOURCE_PACKAGE"]) if os.environ.get("HCP_SOURCE_PACKAGE") else None
+)
 ROOT = Path(__file__).resolve().parents[1]
 BLUE, DARK, GREY = "#286B8B", "#203444", "#788690"
 BAND_LABELS = ["1 (constant)", "2-10", "11-50", "51-200", "Uncaptured"]
@@ -42,10 +43,6 @@ plt.rcParams.update(
 )
 
 
-def sha(path):
-    return hashlib.sha256(path.read_bytes()).hexdigest()
-
-
 def write_csv(path, rows):
     with path.open("w", newline="") as f:
         writer = csv.DictWriter(f, fieldnames=rows[0].keys())
@@ -62,19 +59,16 @@ def prepare_inputs(root, source):
         ("figure_data/geometry_incremental_energy.npz", "geometry_incremental_energy.npz"),
         ("source_data/Figure2_geometry_summary.csv", "original_geometry_summary.csv"),
     ]
-    manifest = []
-    for relative, name in entries:
-        original, local = source / relative, data / name
-        if original.is_file():
-            source_hash = sha(original)
-            if not local.exists():
-                shutil.copy2(original, local)
-            assert sha(local) == source_hash, f"Source differs: {name}"
-            manifest.append(dict(source=str(original), copy=name, sha256=source_hash))
-        else:
-            assert local.is_file(), f"Missing source: {local}"
-            manifest.append(dict(source="Packaged source copy", copy=name, sha256=sha(local)))
-    return data, manifest
+    inputs = [
+        (source / relative if source else data / name, data / name) for relative, name in entries
+    ]
+    for original, _ in inputs:
+        if not original.is_file():
+            raise FileNotFoundError(f"Missing figure input: {original}")
+    for original, local in inputs:
+        if original.resolve() != local.resolve():
+            shutil.copy2(original, local)
+    return data
 
 
 def cortical_map(ax, surface, hemi, values=None):
@@ -141,8 +135,7 @@ def retain_vectors(fig):
 
 
 def main(root, source):
-    (root / "provenance").mkdir(exist_ok=True, parents=True)
-    data, sources = prepare_inputs(root, source)
+    data = prepare_inputs(root, source)
     surface = np.load(data / "surfaces_and_eigenmodes.npz")
     basis = np.load(data / "cpca_basis_REST1_LR.npz")
     increment = np.load(data / "geometry_incremental_energy.npz")["vertex"][:, :30]
@@ -237,7 +230,6 @@ def main(root, source):
         activity = list(csv.DictReader(f))
     activity_summary = json.loads((data / "geometry_activity_summary.json").read_text())
     assert activity_summary["status"] == "PASS"
-    geo_activity = np.array([float(row["geometry_activity_variance_fraction"]) for row in activity])
     assert np.array_equal([int(row["CPCs"]) for row in activity], np.arange(1, 201))
     with (data / "cpca_cortical_variance.csv").open() as f:
         cortical_activity = np.array(
@@ -254,38 +246,12 @@ def main(root, source):
         atol=1e-5,
     )
     assert np.all(cortical_activity[1::2] >= geometry_cortical - 1e-5)
-    for name in [
-        "geometry_activity_retention.csv",
-        "geometry_activity_summary.json",
-        "cpca_cortical_variance.csv",
-        "geometry_cortical_variance.csv",
-    ]:
-        sources.append(
-            dict(source="Archived group covariance export", copy=name, sha256=sha(data / name))
-        )
-
     with (data / "direct_decoding_summary.csv").open() as f:
         decoding = {row["condition"]: row for row in csv.DictReader(f)}
     assert list(decoding) == ["geo15", "geo50", "geo100", "geo150", "geo200"]
     decoding_validation = json.loads((data / "consensus_validation.json").read_text())
     assert decoding_validation["status"] == "PASS"
     assert decoding_validation["source_fingerprints_unchanged"]
-    for name in [
-        "direct_decoding_summary.csv",
-        "consensus_state_metrics.csv",
-        "consensus_validation.json",
-        "archived_CPC30_consensus_verification.csv",
-        "grid_validation_histories.csv",
-        "additional_fitting_validation.json",
-    ]:
-        sources.append(
-            dict(
-                source="Six-HMM common-state evaluation on data server",
-                copy=name,
-                sha256=sha(data / name),
-            )
-        )
-
     # Close the space left by the removed schematic, preserving panel dimensions.
     fig = plt.figure(figsize=(7.4, 8.28))
     fig.text(
@@ -597,50 +563,6 @@ def main(root, source):
                 out_of_bounds.append(text.get_text())
     assert not out_of_bounds, out_of_bounds
     plt.close(fig)
-
-    validation = dict(
-        status="PASS",
-        sources=sources,
-        script_sha256=sha(Path(__file__)),
-        selected_geometric_modes=orders,
-        displayed_CPCs=list(range(1, 31)),
-        spatial_metric="Unweighted retained cortical vertices; separate hemisphere QR projections",
-        basis_gram_max_normalized_offdiagonal=grams,
-        qr_orthogonality_error=qr_errors,
-        archived_vs_recomputed_cumulative_fraction_max_error=projection_error,
-        individual_contribution_matrix_shape=list(increment.T.shape),
-        individual_contribution_color_scale_percent=[0.0001, 100],
-        main_curve_estimator="Fraction of the same full cortical analytic variance retained by each representation",
-        activity_analysis_scope="REST1_LR training covariance; descriptive group result",
-        activity_variance_percent={
-            str(k): float(100 * geo_activity[k - 1]) for k in [3, 10, 30, 50]
-        },
-        same_denominator_comparison=activity_summary["CPCA30_vs_geometry200"],
-        decoding_accuracy_percent={
-            name: 100 * float(row["accuracy_mean"]) for name, row in decoding.items()
-        },
-        decoding_SD_percent={
-            name: 100 * float(row["accuracy_sd"]) for name, row in decoding.items()
-        },
-        decoding_conditions=list(decoding),
-        decoding_bilateral_coordinate_counts=[int(row["complex_coordinates"]) for row in geo_rows],
-        decoding_scope="Geometric-coordinate decoders; identical six-HMM unanimous REST2 frames; participant mean ± SD",
-        decoding_frame_count=int(geo_rows[0]["frames"]),
-        decoding_coverage=float(geo_rows[0]["coverage"]),
-        CPC30_decoding_displayed=False,
-        retained_energy_percent={str(m): float(100 * mean[m - 1]) for m in [10, 50, 200]},
-        no_cropped_text=True,
-        figure_text="PDF TrueType fonts; SVG text nodes; no text-to-path conversion requested.",
-    )
-    for item in sources:
-        original = Path(item["source"])
-        if original.is_file():
-            assert sha(original) == item["sha256"], f"Source changed: {original}"
-    validation["source_hashes_unchanged"] = True
-    (root / "provenance/numerical_validation.json").write_text(
-        json.dumps(validation, indent=2) + "\n"
-    )
-    print(json.dumps(validation, indent=2))
 
 
 if __name__ == "__main__":

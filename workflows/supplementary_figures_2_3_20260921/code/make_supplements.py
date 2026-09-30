@@ -55,7 +55,6 @@ def combined():
     # Transform all cortex rectangles from their original rows to a compact four-row grid.
     for s in range(12):
         row, col = divmod(s, 3)
-        oldy = 0.393 - row * 0.085
         newy = 0.359 - row * 0.073
         x = 0.065 + col * 0.218
         fig.text(x, newy, f"State {s + 1}", fontsize=6.5, weight="bold")
@@ -98,6 +97,5 @@ def atlas_revised():
 
 
 if __name__ == "__main__":
-    (ROOT / "provenance").mkdir(exist_ok=True)
     combined()
     atlas_revised()

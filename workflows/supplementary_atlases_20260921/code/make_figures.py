@@ -1,12 +1,8 @@
-"""Full CPC/ICA/HMM atlases. Reuses the project's depth-sorted cortical rendering.
-Run with the existing python. Text stays editable in PDF/SVG.
-"""
+"""Render the CPC1–30 atlas with editable PDF/SVG text."""
 
 import os  # Public release: configurable data roots.
 from pathlib import Path
-import json
 import shutil
-import hashlib
 import numpy as np
 import matplotlib
 
@@ -18,7 +14,7 @@ from matplotlib.cm import ScalarMappable
 
 ROOT = Path(__file__).resolve().parents[1]
 DATA = ROOT / "source_data"
-SOURCE = Path(os.environ.get("HCP_SOURCE_PACKAGE", "/configure/HCP_SOURCE_PACKAGE"))
+SOURCE = os.environ.get("HCP_SOURCE_PACKAGE")
 plt.rcParams.update(
     {
         "font.family": "DejaVu Sans",
@@ -37,23 +33,20 @@ VIEWS = [("L", -1), ("L", 1), ("R", -1), ("R", 1)]
 
 
 def prepare():
-    manifest = []
-    for src, name in [
-        (SOURCE / "figure_data/cpca_basis_REST1_LR.npz", "cpca_basis_REST1_LR.npz"),
-        (SOURCE / "figure_data/surfaces_and_eigenmodes.npz", "surfaces_and_eigenmodes.npz"),
-    ]:
-        dst = DATA / name
-        if not dst.exists():
+    """Use the configured source bundle, or the two locally supplied inputs."""
+    names = ["cpca_basis_REST1_LR.npz", "surfaces_and_eigenmodes.npz"]
+    source = Path(SOURCE) / "figure_data" if SOURCE else DATA
+    for name in names:
+        if not (source / name).is_file():
+            raise FileNotFoundError(
+                f"Missing input: {source / name}. Set HCP_SOURCE_PACKAGE to the generated "
+                "source bundle, or supply both NPZ files in this figure's source_data directory."
+            )
+    DATA.mkdir(parents=True, exist_ok=True)
+    for name in names:
+        src, dst = source / name, DATA / name
+        if src.resolve() != dst.resolve():
             shutil.copy2(src, dst)
-
-        def digest(p):
-            return hashlib.sha256(p.read_bytes()).hexdigest()
-
-        assert dst.is_file()
-        if src.exists():
-            assert digest(src) == digest(dst)
-        manifest.append({"source": str(src), "copy": name, "sha256": digest(dst)})
-    (ROOT / "provenance/local_sources.json").write_text(json.dumps(manifest, indent=2))
 
 
 class Cortex:
@@ -194,6 +187,5 @@ def cpc():
 
 
 if __name__ == "__main__":
-    (ROOT / "provenance").mkdir(exist_ok=True)
     prepare()
     cpc()

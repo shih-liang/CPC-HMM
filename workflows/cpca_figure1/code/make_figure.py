@@ -5,8 +5,6 @@ from pathlib import Path
 import argparse
 import csv
 import json
-import hashlib
-import time
 import numpy as np
 import matplotlib
 
@@ -67,20 +65,6 @@ plt.rcParams.update(
 def read_csv(path):
     with path.open() as f:
         return list(csv.DictReader(f))
-
-
-def fingerprint(path):
-    s = path.stat()
-    with path.open("rb") as f:
-        x = f.read(65536)
-        f.seek(max(0, s.st_size - 65536))
-        x += f.read(65536)
-    return dict(
-        path=str(path),
-        bytes=s.st_size,
-        mtime_ns=s.st_mtime_ns,
-        edge_sha256=hashlib.sha256(x).hexdigest(),
-    )
 
 
 class Cortex:
@@ -267,11 +251,7 @@ def mode_rows(fig, rect, components, brain, fields, line_fields, limit, variance
 
 
 def main(root):
-    start_time = time.time()
     root.mkdir(exist_ok=True, parents=True)
-    (root / "provenance").mkdir(exist_ok=True)
-    (root / "provenance/render_validation.json").write_text(json.dumps(dict(status="RUNNING")))
-    before = [fingerprint(p) for p in [BASIS, SCORES, RAW, GEOMETRY]]
     b = np.load(BASIS)
     u = b["complex_vectors"][:, :30].astype(np.complex128)
     idx = b["vertex_indices"]
@@ -551,74 +531,6 @@ def main(root):
         )
         print("SAVED main", ext, flush=True)
     plt.close(fig)
-    after = [fingerprint(p) for p in [BASIS, SCORES, RAW, GEOMETRY]]
-    assert before == after
-    metadata = dict(
-        status="PASS",
-        script_sha256=hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
-        layout="amplitude_phase_individual_evolution_variance",
-        selection_source="user CPC1-6",
-        vector_mesh_edge_overlap_points=0.35,
-        seconds=time.time() - start_time,
-        run_index=2,
-        acquisition="REST2_LR",
-        frames=WINDOW.tolist(),
-        snapshot_frames=SNAP.tolist(),
-        TR=TR,
-        selected_components=[k + 1 for k in SELECTED],
-        score_projection_relative_error=error,
-        basis_orthogonality_max_error=orth,
-        rest2_cumulative_variance=[
-            dict(rank=int(k), mean_pct=float(m * 100), sd_pct=float(s * 100))
-            for k, m, s in zip(rank, mean, cumulative_sd)
-        ],
-        errorbar_display=dict(
-            statistic="Sample SD across participant means; ddof=1",
-            summary_sha256=hashlib.sha256(
-                (data / "cpca_cumulative_variance_distribution.csv").read_bytes()
-            ).hexdigest(),
-            cap_points=4,
-            linewidth_points=0.8,
-            marker_points=2.2,
-            bars_above_markers=True,
-            interval_scale_factor=1,
-        ),
-        component_variance_panel=dict(
-            estimator="REST2 participant mean",
-            components=30,
-            errorbars="Sample SD across participant means; ddof=1",
-            summary_sha256=hashlib.sha256(
-                (data / "cpca_component_variance_distribution.csv").read_bytes()
-            ).hexdigest(),
-            cap_points=1.8,
-            cap_thickness_points=0.45,
-        ),
-        display_limit=limit,
-        snapshot_fraction_clipped=float(np.mean(abs(fields) > limit)),
-        component_RMS=rms.tolist(),
-        path_original_vertices=brain.path.tolist(),
-        path_distance_mm=brain.distance.tolist(),
-        path_endpoint_coordinates=brain.path_coordinates[[0, -1]].tolist(),
-        source_preserved=before == after,
-        input_fingerprints=before,
-        interpretation="Single-mode reconstructions at recorded times; no 30-component sum; not an independent raw-BOLD propagation or neuronal-causality test.",
-    )
-    (root / "provenance/render_validation.json").write_text(json.dumps(metadata, indent=2))
-    print(
-        json.dumps(
-            {
-                k: metadata[k]
-                for k in [
-                    "status",
-                    "seconds",
-                    "score_projection_relative_error",
-                    "display_limit",
-                    "snapshot_fraction_clipped",
-                ]
-            }
-        ),
-        flush=True,
-    )
 
 
 if __name__ == "__main__":

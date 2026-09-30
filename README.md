@@ -4,6 +4,10 @@ Code for analysing CPC travelling-wave coordinates, ICA networks and HMM states,
 
 **Download data → preprocess → analyse → plot.** Accuracy, retained variance, consensus coverage and transition counts are computed from the supplied data and fitted models. They are not required to match previously reported values.
 
+If the HCP data and templates are already stored locally, start at **2. Preprocess**.
+If the aligned cortical/ICA arrays and geometric eigenmodes have already been
+generated, configure their paths and continue at **3. Analyse**.
+
 ## 1. Manually download data
 
 All datasets, atlases and surface templates must be downloaded manually from their providers. Review and accept the applicable access and data-use terms before downloading. The analysis and plotting programs read local files only; they do not download missing data or accept agreements on your behalf. Missing inputs must be obtained and placed locally before rerunning a program.
@@ -31,7 +35,7 @@ Manually obtain the following inputs:
 
 Here “downloaded data” means **HCP-preprocessed ICA-FIX data**. This repository does not rerun HCP preprocessing or estimate the official ICA50 decomposition.
 
-Prepare `subjects.txt`, one participant ID per line. The current full-cohort analyses require 1,003 participants with all four 1,200-frame acquisitions. Use the same list and order for cortical and ICA data. The original cohort list and participant data are not bundled; changing participants changes the analysis. Conversion supports smaller subsets, but full-cohort fitting and figure analyses retain the study dimensions.
+Use the existing local HCP downloads; downloading them again is unnecessary. Prepare `subjects.txt`, one participant ID per line, from all 1,003 participants with the four required 1,200-frame acquisitions and corresponding ICA50 data. This file specifies the common processing order for cortical and ICA arrays; it is not a separately selected study cohort. Use the same order throughout. Conversion supports smaller subsets, but full-cohort fitting and figure analyses retain the study dimensions.
 
 ## 2. Preprocess
 
@@ -188,5 +192,10 @@ Figures are written beside their workflows. PDF text remains editable. Reuse of 
 ## Verification and license
 
 Verification includes full-cohort CPCA fitting, one reference HMM refit, all CPC-count and geometric-coordinate decoder fits used in the figures, recomputation of transition and correspondence statistics, and rendering of the main and supplementary figures. Input conversion was checked on available reference scans. Six-fit HMM agreement and the optional HMM-method comparisons were recomputed from saved models; not every HMM initialization or every raw ICA-FIX scan was refitted or reprocessed. Exact numerical replay uses the recorded seeds and input versions; new random initializations can produce different state solutions.
+
+The current renderers were also exercised in a fresh workflow copy using existing
+study inputs. Input preparation was checked with absent output directories,
+updated source bundles, local-only inputs and missing source files. Plotting does
+not write separate provenance reports or checksum manifests.
 
 Project-owned code is MIT. The HMM-MAR-derived comparison component retains GPL-3.0. See [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md). Data and trained models are not distributed, and code licenses do not grant data access or redistribution rights.

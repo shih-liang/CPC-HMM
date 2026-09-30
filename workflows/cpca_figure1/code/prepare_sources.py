@@ -4,14 +4,12 @@ from pathlib import Path
 import argparse
 import csv
 import json
-import hashlib
 import numpy as np
 
 
 def main(source, root):
     target = root / "source_data"
     target.mkdir(parents=True, exist_ok=True)
-    (root / "provenance").mkdir(exist_ok=True)
     names = [
         "cpca_test_variance_summary.csv",
         "original_cpca_component_properties.csv",
@@ -53,19 +51,6 @@ def main(source, root):
                 [1003] * 30,
             )
         )
-    names.append("cpca_test_score_reproducibility.csv")
-    (root / "provenance/local_sources.json").write_text(
-        json.dumps(
-            [
-                dict(
-                    path=str(source / "source_data" / n),
-                    sha256=hashlib.sha256((source / "source_data" / n).read_bytes()).hexdigest(),
-                )
-                for n in names
-            ],
-            indent=2,
-        )
-    )
 
 
 if __name__ == "__main__":
