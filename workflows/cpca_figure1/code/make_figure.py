@@ -441,7 +441,7 @@ def main(root):
     fig.text(
         0.563,
         0.295,
-        "Individual CPC contributions on REST2",
+        "Individual CPC contributions",
         fontsize=7.6,
         fontweight="bold",
         color=DARK,
@@ -449,15 +449,14 @@ def main(root):
     ax = fig.add_axes([0.085, 0.096, 0.356, 0.177])
     rank = np.array([float(r["rank"]) for r in test])
     mean = np.array([float(r["mean"]) for r in test])
-    ax.plot(range(1, 51), 100 * np.array(train["cumulative"]), color=BLUE, label="REST1 LR basis")
     cumulative_sd = np.array([float(r["sd"]) for r in test])
     interval = 100 * np.array([cumulative_sd, cumulative_sd])
-    # Draw participant SDs above the mean markers at their actual data-scale extent.
+    # Panel d shows held-out REST2 means and participant SDs in both plots.
     ax.errorbar(
         rank,
         100 * mean,
         yerr=interval,
-        fmt="o",
+        fmt="o-",
         color=ORANGE,
         ms=2.2,
         mfc="white",
@@ -469,7 +468,7 @@ def main(root):
         capthick=0.8,
         barsabove=True,
         zorder=5,
-        label="REST2 mean ± SD",
+        label="Mean ± SD",
     )
     ax.axvline(30, color=GREY, ls=":", lw=0.7)
     ax.set(
@@ -479,32 +478,6 @@ def main(root):
         ylabel="Cumulative analytic variance (%)",
         xticks=[0, 10, 30, 50],
         yticks=[0, 20, 40, 60],
-    )
-    ax.text(
-        0.09,
-        0.29,
-        f"30 CPCs: {100 * train['cumulative'][29]:.1f}%",
-        transform=ax.transAxes,
-        color=BLUE,
-        fontsize=7.4,
-        fontweight="bold",
-    )
-    rank30 = int(np.flatnonzero(rank == 30)[0])
-    ax.text(
-        0.09,
-        0.17,
-        f"REST2: {100 * mean[rank30]:.2f}%",
-        transform=ax.transAxes,
-        color=ORANGE,
-        fontsize=6.8,
-    )
-    ax.text(
-        0.09,
-        0.06,
-        f"SD: {100 * cumulative_sd[rank30]:.2f} percentage points",
-        transform=ax.transAxes,
-        color=DARK,
-        fontsize=6,
     )
     ax.legend(frameon=False, fontsize=5.8, loc="upper left")
     ax = fig.add_axes([0.563, 0.096, 0.375, 0.177])
@@ -530,7 +503,7 @@ def main(root):
         xticks=[1, 5, 10, 15, 20, 25, 30],
         yticks=[0.2, 1, 5, 20],
         xlabel="CPC",
-        ylabel="REST2 analytic variance (%)",
+        ylabel="Analytic variance (%)",
     )
     ax.set_yticklabels(["0.2", "1", "5", "20"])
     ax.minorticks_off()

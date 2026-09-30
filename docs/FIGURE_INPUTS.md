@@ -6,6 +6,8 @@ Generate inputs using the programs and placement instructions in [ANALYSIS.md](A
 
 Directory: `workflows/cpca_figure1/`. Individual CPC1–6; needs source_data plus the basis, scores, geometry and original example run under the configured data roots.
 
+Panel d uses `cpca_cumulative_variance_distribution.csv` and `cpca_component_variance_distribution.csv` for the REST2 participant means and SDs. The training variance is used for the component annotations above, not as a second series in panel d.
+
 ## Main Fig. 2
 
 Directory: `workflows/main_results_figures_v4/`. Needs the complete source_data folder containing state profiles, accuracy, confusion and reproducibility summaries.

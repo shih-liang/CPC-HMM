@@ -142,7 +142,7 @@ Follow the commands in [ANALYSIS.md](docs/ANALYSIS.md):
 
 | Figure | Analysis |
 | --- | --- |
-| 1 | Training/test component variance and single-CPC fields |
+| 1 | Single-CPC fields, training mode contributions and held-out variance summaries |
 | 2 | State-associated amplitude/phase, decoding versus CPC count, HMM/CPCA reproducibility |
 | 3 | Six panels: HMM transitions, individual CPC trajectories, changes in CPC coefficients, and amplitude/phase/probability for all 132 directed transitions |
 | 4 | Individual and cumulative geometric contributions to CPCs, activity variance, decoding with 30/100/200/300/400 bilateral geometric coordinates |
