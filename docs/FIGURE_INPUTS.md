@@ -26,6 +26,8 @@ The renderer reads only these locally generated files. No old transition-profile
 
 Directory: `workflows/figure4_geometry/`. Needs source_data containing spatial geometry, incremental energy, activity statistics and five-count decoding tables.
 
+Panel b renders both the individual geometric contributions and their cumulative spatial-energy capture for each CPC. Both use `geometry_incremental_energy.npz`; the cumulative curves require no extra input files.
+
 ## Supplementary Fig. 1
 
 Directory: `workflows/supplementary_atlases_20260921/`. Needs source_data/cpca_basis_REST1_LR.npz and source_data/surfaces_and_eigenmodes.npz.

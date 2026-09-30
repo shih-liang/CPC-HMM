@@ -13,7 +13,7 @@ import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 from matplotlib.collections import PolyCollection, QuadMesh
-from matplotlib.colors import Normalize, LogNorm
+from matplotlib.colors import Normalize, LogNorm, ListedColormap
 from matplotlib.cm import ScalarMappable
 from matplotlib.patches import FancyArrowPatch
 
@@ -366,16 +366,16 @@ def main(root, source):
     )
     cb.ax.tick_params(labelsize=5.5, length=1.8, pad=1)
     cb.set_label("Normalized geometric mode value", fontsize=6, labelpad=2)
-    # b: each column is one ordered QR increment, summed across hemispheres.
+    # b: individual QR contributions and their cumulative capture of each CPC.
     fig.text(
         0.07,
         0.535870,
-        "b  Individual geometric mode contributions to CPC1-30",
+        "b  Geometric contributions and CPC reconstruction",
         fontsize=8.8,
         fontweight="bold",
         color=DARK,
     )
-    ax = fig.add_axes([0.095, 0.360870, 0.765, 0.147826])
+    ax = fig.add_axes([0.095, 0.350870, 0.415, 0.157826])
     mesh = ax.pcolormesh(
         np.arange(201) + 0.5,
         np.arange(31) + 0.5,
@@ -390,19 +390,64 @@ def main(root, source):
     ax.set(
         xlim=(0.5, 200.5),
         ylim=(30.5, 0.5),
-        xticks=[1, 25, 50, 100, 150, 200],
+        xticks=[1, 50, 100, 150, 200],
         yticks=[1, 5, 10, 15, 20, 25, 30],
         xlabel="Geometric mode order (per hemisphere)",
         ylabel="CPC",
     )
     ax.tick_params(length=2)
     cb = fig.colorbar(
-        mesh, cax=fig.add_axes([0.883, 0.360870, 0.012, 0.147826]), ticks=[0.0001, 0.01, 1, 100]
+        mesh, cax=fig.add_axes([0.531, 0.350870, 0.010, 0.157826]), ticks=[0.0001, 0.01, 1, 100]
     )
     cb.ax.set_yticklabels(["0.0001", "0.01", "1", "100"])
     cb.ax.tick_params(labelsize=5.5, length=2)
     cb.minorticks_off()
-    cb.set_label("Incremental spatial energy (%)", fontsize=6, labelpad=4)
+    cb.set_label("Spatial energy contribution (%)", fontsize=6, labelpad=4)
+
+    # Use the same denominator as the heatmap: the full spatial energy of each CPC.
+    # Each abscissa includes this many geometric modes in each hemisphere.
+    ax = fig.add_axes([0.675, 0.350870, 0.275, 0.157826])
+    cpc_colors = plt.get_cmap("viridis")(np.linspace(0.05, 0.88, 30))
+    cpc_cmap = ListedColormap(cpc_colors)
+    mode_counts = np.arange(201)
+    captured = 100 * np.vstack([np.zeros((1, 30)), cumulative])
+    for k, color in enumerate(cpc_colors):
+        (curve,) = ax.plot(mode_counts, captured[:, k], color=color, lw=0.65, alpha=0.9)
+        curve.set_gid(f"CPC{k + 1}_cumulative_spatial_energy")
+    ax.plot(
+        mode_counts,
+        captured.mean(axis=1),
+        color="#141414",
+        ls="--",
+        lw=1.3,
+        label="CPC1-30 mean",
+        zorder=5,
+    )
+    ax.set(
+        xlim=(0, 200),
+        ylim=(0, 102),
+        xticks=[0, 50, 100, 150, 200],
+        yticks=[0, 25, 50, 75, 100],
+        xlabel="Geometric modes per hemisphere",
+        ylabel="Spatial energy captured (%)",
+    )
+    ax.tick_params(length=2)
+    ax.legend(
+        loc="center right",
+        bbox_to_anchor=(1.03, 0.45),
+        fontsize=5.4,
+        frameon=False,
+        handlelength=2.3,
+        handletextpad=0.5,
+    )
+    cb = fig.colorbar(
+        ScalarMappable(norm=Normalize(1, 30), cmap=cpc_cmap),
+        cax=ax.inset_axes([0.55, 0.12, 0.40, 0.045]),
+        orientation="horizontal",
+        ticks=[1, 10, 20, 30],
+    )
+    cb.ax.set_title("CPC", fontsize=5.8, pad=2)
+    cb.ax.tick_params(labelsize=5, length=1.5, pad=1)
 
     # c: same activity target and variance denominator for both representations.
     fig.text(
