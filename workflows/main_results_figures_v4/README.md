@@ -4,6 +4,8 @@ Needs the complete source_data folder containing state profiles, accuracy, confu
 
 Panel a, "Network state fitting example", compares HMM posteriors and CPC decoder outputs over the same interval. Its time axis is below the CPC heatmap; no agreement strip is displayed.
 
+The figure is 180 × 188 mm. Reduced spacing above and below panel a preserves the other panel sizes and the square data frames in the bottom row.
+
 From the repository root:
 
 ```bash

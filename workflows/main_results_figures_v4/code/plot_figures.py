@@ -136,20 +136,23 @@ def figure2():
     profiles = np.load(DATA / "state_profiles.npz")
     example = read("Figure3_example_posteriors.csv")
     heading(fig, "a", "Network state fitting example", 0.065, 0.973, size=8)
+    example_heading = list(fig.texts)
+    example_axes = []
     for idx, stem in enumerate(["HMM", "CPCA30"]):
         ax = fig.add_axes([0.075, 0.878 - idx * 0.063, 0.815, 0.048])
+        example_axes.append(ax)
         ax.set_facecolor(plt.get_cmap("magma")(0))
         values = np.array([[float(r[f"{stem}_state{k}"]) for r in example] for k in range(1, 13)])
         m = matrix(ax, values)
         ax.set(yticks=[0, 5, 11], yticklabels=["1", "6", "12"], xticks=[])
-        ax.set_ylabel("HMM state" if idx == 0 else "CPC output", labelpad=3, fontsize=6.5)
+        ax.set_ylabel("HMM state" if idx == 0 else "CPC output", labelpad=3, fontsize=6)
         if idx == 1:
             ax.set(
                 xticks=[-0.5, 49.5, 99.5, 149.5, 199.5],
                 xticklabels=["0", "36", "72", "108", "144"],
             )
             ax.set_xlabel("Time within interval (s)", labelpad=2, fontsize=6.4)
-    cbar(fig, m, [0.909, 0.815, 0.012, 0.111], "Probability", [0, 0.5, 1])
+    example_axes.append(cbar(fig, m, [0.909, 0.815, 0.012, 0.111], "Probability", [0, 0.5, 1]).ax)
 
     heading(fig, "b", "State-associated amplitude of all 30 CPCs", 0.065, 0.725, size=8)
     ax = fig.add_axes([0.075, 0.548, 0.815, 0.155])
@@ -205,7 +208,7 @@ def figure2():
         for r in [0.2, 0.5, 0.8]
     ]
     fig.text(0.665, 0.493, "Phase concentration (R)", fontsize=5.6, color="#5C6770")
-    fig.legend(
+    phase_legend = fig.legend(
         handles=handles,
         ncol=3,
         loc="center",
@@ -434,18 +437,34 @@ def figure2():
         writer.writeheader()
         writer.writerows(fit_points)
 
+    # Remove 12 mm of blank space around panel a, preserving all data-frame sizes.
+    height_mm = 188
+    vertical_scale = 200 / height_mm
+    fig.set_figheight(height_mm / 25.4)
+    for ax in fig.axes:
+        box = ax.get_position()
+        shift = 5.6 / 200 if ax in example_axes else 0
+        ax.set_position(
+            [box.x0, (box.y0 - shift) * vertical_scale, box.width, box.height * vertical_scale]
+        )
+    for text in fig.texts:
+        x, y = text.get_position()
+        shift = 12 / 200 if text in example_heading else 0
+        text.set_position((x, (y - shift) * vertical_scale))
+    phase_legend.set_bbox_to_anchor((0.777, 0.479 * vertical_scale))
+
     geometry = []
     for name, ax in square_axes:
         box = ax.get_position()
         width = box.width * 180
-        height = box.height * 200
+        height = box.height * height_mm
         geometry.append(
             dict(panel=name, width_mm=width, height_mm=height, aspect_ratio=width / height)
         )
     (ROOT / "provenance/figure2_layout.json").write_text(
         json.dumps(
             dict(
-                size_mm=[180, 200],
+                size_mm=[180, height_mm],
                 panel_order=[
                     "a_example",
                     "b_amplitude",
