@@ -2,6 +2,8 @@
 
 Needs the complete source_data folder containing state profiles, accuracy, confusion and reproducibility summaries.
 
+Panel a, "Network state fitting example", compares HMM posteriors and CPC decoder outputs over the same interval. Its time axis is below the CPC heatmap; no agreement strip is displayed.
+
 From the repository root:
 
 ```bash

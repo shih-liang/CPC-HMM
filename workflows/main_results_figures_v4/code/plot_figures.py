@@ -12,7 +12,7 @@ import matplotlib
 
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
-from matplotlib.colors import TwoSlopeNorm, ListedColormap
+from matplotlib.colors import TwoSlopeNorm
 from matplotlib.lines import Line2D
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -135,18 +135,7 @@ def figure2():
     stat = json.loads((DATA / "decoding_summary.json").read_text())
     profiles = np.load(DATA / "state_profiles.npz")
     example = read("Figure3_example_posteriors.csv")
-    agree = read("fixed_example_agreement.csv")
-    assert np.array_equal(
-        [int(float(r["frame"])) for r in example], [int(r["frame"]) for r in agree]
-    )
-    heading(fig, "a", "Network-state recovery in a fixed example", 0.065, 0.973, size=8)
-    fig.text(
-        0.075,
-        0.949,
-        "30 complex CPCs × 50 frames; 1,003 participants; blue strip: six-fit HMM agreement",
-        fontsize=6.1,
-        color="#5C6770",
-    )
+    heading(fig, "a", "Network state fitting example", 0.065, 0.973, size=8)
     for idx, stem in enumerate(["HMM", "CPCA30"]):
         ax = fig.add_axes([0.075, 0.878 - idx * 0.063, 0.815, 0.048])
         ax.set_facecolor(plt.get_cmap("magma")(0))
@@ -154,15 +143,13 @@ def figure2():
         m = matrix(ax, values)
         ax.set(yticks=[0, 5, 11], yticklabels=["1", "6", "12"], xticks=[])
         ax.set_ylabel("HMM state" if idx == 0 else "CPC output", labelpad=3, fontsize=6.5)
+        if idx == 1:
+            ax.set(
+                xticks=[-0.5, 49.5, 99.5, 149.5, 199.5],
+                xticklabels=["0", "36", "72", "108", "144"],
+            )
+            ax.set_xlabel("Time within interval (s)", labelpad=2, fontsize=6.4)
     cbar(fig, m, [0.909, 0.815, 0.012, 0.111], "Probability", [0, 0.5, 1])
-    ax = fig.add_axes([0.075, 0.799, 0.815, 0.007])
-    matrix(ax, [[int(r["unanimous"]) for r in agree]], cmap=ListedColormap(["#E9ECEE", BLUE]))
-    ax.set(
-        yticks=[],
-        xticks=[-0.5, 49.5, 99.5, 149.5, 199.5],
-        xticklabels=["0", "36", "72", "108", "144"],
-    )
-    ax.set_xlabel("Time within interval (s)", labelpad=2, fontsize=6.4)
 
     heading(fig, "b", "State-associated amplitude of all 30 CPCs", 0.065, 0.725, size=8)
     ax = fig.add_axes([0.075, 0.548, 0.815, 0.155])
@@ -374,7 +361,11 @@ def figure2():
             color=color,
         )
         if name == "HMM":
-            fit_labels = {"robust_seed2": "S2", "robust": "S1", **{f"consensus_seed{k}": f"S{k}" for k in range(3, 7)}}
+            fit_labels = {
+                "robust_seed2": "S2",
+                "robust": "S1",
+                **{f"consensus_seed{k}": f"S{k}" for k in range(3, 7)},
+            }
             worst = int(values.argmax())
             ax.scatter(
                 [dotx[worst]],
