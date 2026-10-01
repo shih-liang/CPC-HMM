@@ -11,6 +11,8 @@ This GPL-3.0 component contains our Python implementation of Gaussian HMM infere
 
 The fit driver reads METHODS (default em,vb) and SEEDS (optional comma-separated integers; by default six random seeds saved in `pilot/seeds.json`) from the environment. It writes pilot/ next to itself. Run in a fresh copy.
 
+Both methods use 12 states and full covariance. They start from the same training-scan segments for each seed: 12 scan indices are sampled with replacement, and zero-based frames 100–199 of each selected scan initialize a state mean. This sampling can give two states the same initial mean. The common covariance initializer adds 0.05 to the diagonal; subsequent EM covariance updates add 0.01. Fitting stops when the mean absolute posterior change is below `1e-5` after at least 50 iterations, or at 500 iterations. The saved `converged` field distinguishes these outcomes.
+
 After fitting, from the repository root:
 
 ```bash
