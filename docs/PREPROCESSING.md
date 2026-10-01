@@ -95,6 +95,6 @@ For already generated eigenmodes, `prepare_geometry.py` remains an optional form
 
 ## Verification
 
-For one participant, filtering and resampling of all four archived smoothed acquisitions matched the stored outputs with standardized RMSE below 8 × 10⁻¹¹. Starting from the two available REST1 ICA-FIX files, the complete conversion matched the stored cortical arrays with maximum absolute difference at most 1.2 × 10⁻⁷. ICA50 conversion matched all four runs exactly. These checks include the position of standardization relative to filtering/resampling. The filter uses the actual study settings; its code comment records the literature comparison. The full 1,003-participant models were not refitted for this update.
+For one participant, filtering and resampling of all four archived smoothed acquisitions matched the stored outputs with standardized RMSE below 8 × 10⁻¹¹. Starting from the two available REST1 ICA-FIX files, the complete conversion matched the stored cortical arrays with maximum absolute difference at most 1.2 × 10⁻⁷. ICA50 conversion matched all four runs exactly. These checks include the position of standardization relative to filtering/resampling. The filter uses the actual study settings; its code comment records the literature comparison. These are preprocessing checks; full-cohort model refitting is covered in [ANALYSIS.md](ANALYSIS.md#verification-scope).
 
 See [ANALYSIS.md](ANALYSIS.md) for subsequent fitting and [README.md](../README.md#4-plot) for automated figure-source assembly.

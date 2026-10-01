@@ -191,7 +191,9 @@ Figures are written beside their workflows. PDF text remains editable. Reuse of 
 
 ## Verification and license
 
-Verification includes full-cohort CPCA fitting, one reference HMM refit, all CPC-count and geometric-coordinate decoder fits used in the figures, recomputation of transition and correspondence statistics, and rendering of the main and supplementary figures. Input conversion was checked on available reference scans. Six-fit HMM agreement and the optional HMM-method comparisons were recomputed from saved models; not every HMM initialization or every raw ICA-FIX scan was refitted or reprocessed. Exact numerical replay uses the recorded seeds and input versions; new random initializations can produce different state solutions.
+Verification uses the existing local HCP data. Full-cohort CPCA, all seven HMM fits required by the main-figure pipeline, seven CPC-count decoders and five geometric-coordinate decoders have been refitted. The reference HMM was checked first, followed by the six remaining fits. State matching, the six-fit agreement mask and CPC30 decoding summaries were recomputed from these refitted HMM outputs and previously refitted decoder predictions. Transition and correspondence statistics and all seven main/supplementary figures were also checked. Exact numerical replay uses the recorded seeds, training lengths and input versions; routine runs use random HMM initializations by default and can produce different state solutions.
+
+ICA-FIX input conversion was checked on available reference scans, without reprocessing every scan. The optional EM/Variational Bayes/GLHMM comparison statistics were recomputed from saved models; those comparison models were not all refitted during this verification.
 
 The current renderers were also exercised in a fresh workflow copy using existing
 study inputs. Input preparation was checked with absent output directories,
